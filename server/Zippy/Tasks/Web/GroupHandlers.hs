@@ -1,30 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Tasks.Web.GroupHandlers where
-import Web.Scotty
+import Zippy.Base.Web
 
-listGroups :: ActionM ()
+listGroups :: Handler c ()
 listGroups = raise "unimplemented"
 
-createGroup :: ActionM ()
+createGroup :: Handler c ()
 createGroup = raise "unimplemented"
 
-getGroup :: ActionM ()
+getGroup :: Handler c ()
 getGroup = raise "unimplemented"
 
-updateGroup :: ActionM ()
+updateGroup :: Handler c ()
 updateGroup = raise "unimplemented"
 
-deleteGroup :: ActionM ()
+deleteGroup :: Handler c ()
 deleteGroup = raise "unimplemented"
 
-getGroupLists :: ActionM ()
+getGroupLists :: Handler c ()
 getGroupLists = raise "unimplemented"
 
-createGroupList :: ActionM ()
+createGroupList :: Handler c ()
 createGroupList = raise "unimplemented"
 
-getGroupUsers :: ActionM ()
+getGroupUsers :: Handler c ()
 getGroupUsers = raise "unimplemented"
 
-addUserToGroup :: ActionM ()
+addUserToGroup :: Handler c ()
 addUserToGroup = raise "unimplemented"

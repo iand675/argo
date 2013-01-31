@@ -1,21 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Tasks.Web.ListHandlers where
-import Web.Scotty
+import Zippy.Base.Web
 
-getLists :: ActionM ()
+getLists :: Handler c ()
 getLists = raise "unimplemented"
 
-getList :: ActionM ()
+getList :: Handler c ()
 getList = raise "unimplemented"
 
-updateList :: ActionM ()
+updateList :: Handler c ()
 updateList = raise "unimplemented"
 
-deleteList :: ActionM ()
+deleteList :: Handler c ()
 deleteList = raise "unimplemented"
 
-getListTasks :: ActionM ()
+getListTasks :: Handler c ()
 getListTasks = raise "unimplemented"
 
-createListTask :: ActionM ()
+createListTask :: Handler c ()
 createListTask = raise "unimplemented"

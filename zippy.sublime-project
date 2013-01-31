@@ -1,0 +1,25 @@
+{
+  "folders":
+  [
+    {
+      "name": "Server",
+      "path": "server",
+      "folder_exclude_patterns": ["dist", "Zippy/Calendar", "Zippy/Chat", "Zippy/Contacts", "Zippy/Mail", "Zippy/Wiki"]
+    },
+    {
+      "name": "Frontend",
+      "path": "frontend",
+      "folder_exclude_patterns": ["build"]
+    },
+    {
+      "name": "Project",
+      "path": ".",
+      "folder_exclude_patterns": ["server", "frontend"]
+    }
+  ],
+  "settings":
+  {
+    "tab_size": 4,
+    "translate_tabs_to_spaces": true
+  }
+}

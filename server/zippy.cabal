@@ -46,7 +46,7 @@ executable Server
     other-modules:     Zippy.Base.Client, Zippy.Base.Model, Zippy.Base.Web, Zippy.Calendar.Client, Zippy.Chat.Client, Zippy.Contacts.Client, Zippy.Mail.Client, Zippy.Tasks.Client, Zippy.Tasks.Data.Service, Zippy.Tasks.Model.Group, Zippy.Tasks.Model.List, Zippy.Tasks.Model.Sideload, Zippy.Tasks.Model.Task, Zippy.Tasks.Web.Config, Zippy.Tasks.Web.GroupHandlers, Zippy.Tasks.Web.ListHandlers, Zippy.Tasks.Web.TaskHandlers, Zippy.Tasks.Web.UserHandlers, Zippy.User.Client, Zippy.User.Model.CurrentUser, Zippy.User.Model.NewUser, Zippy.User.Model.User, Zippy.Wiki.Client
   
     -- Other library packages from which modules are imported.
-    build-depends:       base ==4.6.*, mtl ==2.1.*, resourcet ==0.4.*, aeson ==0.6.*, bytestring ==0.10.*, containers ==0.5.*, text ==0.11.*, http-conduit ==1.8.*, http-types ==0.7.*, scotty ==0.4.*
+    build-depends:       base ==4.6.*, mtl ==2.1.*, resourcet ==0.4.*, aeson ==0.6.*, bytestring ==0.10.*, containers ==0.5.*, text ==0.11.*, http-conduit ==1.8.*, http-types ==0.7.*, scotty ==0.4.*, cookie, wai, time, hedis, tagged
 
 test-suite WebTest
     type: exitcode-stdio-1.0
@@ -62,7 +62,12 @@ test-suite WebTest
                     HUnit,
                     QuickCheck,
                     containers,
-                    mtl
+                    mtl,
+                    cookie,
+                    wai,
+                    time,
+                    hedis,
+                    tagged
     other-modules:  Zippy.Base.Client
                     Zippy.User.Web.Tests,
                     Zippy.User.Client
@@ -75,5 +80,5 @@ library
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.6.*, mtl ==2.1.*, resourcet ==0.4.*, aeson ==0.6.*, bytestring ==0.10.*, containers ==0.5.*, text ==0.11.*, http-conduit ==1.8.*, http-types ==0.7.*, scotty ==0.4.*
+  build-depends:       base ==4.6.*, mtl ==2.1.*, resourcet ==0.4.*, aeson ==0.6.*, bytestring ==0.10.*, containers ==0.5.*, text ==0.11.*, http-conduit ==1.8.*, http-types ==0.7.*, scotty ==0.4.*, cookie, wai, time, hedis, tagged
  

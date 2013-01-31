@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Tasks.Web.TaskHandlers where
-import Web.Scotty
+import Zippy.Base.Web
 
-getTask :: ActionM ()
+getTask :: Handler c ()
 getTask = raise "unimplemented"
 
-updateTask :: ActionM ()
+updateTask :: Handler c ()
 updateTask = raise "unimplemented"
 
-deleteTask :: ActionM ()
+deleteTask :: Handler c ()
 deleteTask = raise "unimplemented"
