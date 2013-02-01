@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Zippy.Tasks.Models where
+module Zippy.Tasks.Web.Models where
 import Data.Time
 import Zippy.Base.Model
-import Zippy.User.Models
+import Zippy.User.Web.Models
 
 type Icon = Text
 

@@ -1,37 +1,34 @@
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
-module Zippy.User.Models where
+module Zippy.User.Web.Models where
 import Zippy.Base.Model
 
 data CurrentUser = CurrentUser
     { currentUserUsername     :: Text
     , currentUserName         :: Text
-    , currentUserAvatar       :: Text
+    , currentUserAvatar       :: Maybe Text
     , currentUserEmail        :: Text
-    , currentUserPasswordHash :: Text
-    , currentUserMailable     :: Bool
     } deriving (Read, Show, Eq)
 
 data UserChangeset = UserChangeset
     { userChangesetName     :: Maybe Text
-    , userChangesetAvatar   :: Maybe Text
+    , userChangesetAvatar   :: Maybe (Maybe Text)
     , userChangesetEmail    :: Maybe Text
     , userChangesetPassword :: Maybe Text
-    , userChangesetMailable :: Maybe Bool
+    , userChangesetCompany  :: Maybe (Maybe Text)
     } deriving (Read, Show, Eq)
 
 data NewUser = NewUser
-    { newUserName            :: Text
+    { newUserUsername        :: Text
+    , newUserName            :: Text
     , newUserEmail           :: Text
     , newUserPassword        :: Text
-    , newUserConfirmPassword :: Text
-    , newUserMailable        :: Bool
     } deriving (Read, Show, Eq)
 
 data User = User
-    { userId     :: Text
-    , userName   :: Text
-    , userAvatar :: Text
-    , userEmail  :: Text
+    { userUsername :: Text
+    , userName     :: Text
+    , userAvatar   :: Maybe Text
+    , userEmail    :: Text
     } deriving (Read, Show, Eq)
 
 instance Changeset CurrentUser UserChangeset where

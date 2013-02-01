@@ -1,23 +1,24 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FunctionalDependencies, MultiParamTypeClasses #-}
 module Zippy.Base.Data (
 	Namespace(..),
 	ByteString,
 	module Data.Proxy,
 	runData,
-	key,
 	redis,
-	Key(..),
-	Changeset(..),
 	MultiDb,
 	initialize,
 	shutdown,
-	DbConfig
+	DbConfig,
+	DataRep(..)
 ) where
 import Control.Monad.Reader
 import Data.Aeson.Types
 import Data.ByteString.Char8 (ByteString)
 import Data.Proxy
 import Database.Redis
+
+class DataRep a d | a -> d where
+	fromData :: d -> a
 
 data RiakConnection = RiakConnection
 data RedisConnection = RedisConnection
@@ -44,8 +45,6 @@ runData m = do
 	runRedis (redisConnection conf) quit
 	return result
 
-key :: ByteString -> Key a
-key = Key
 --riak :: Riak a -> MultiDb a
 --riak = undefined
 redis :: Redis a -> MultiDb a
@@ -56,6 +55,3 @@ redis m = do
 --metric = undefined
 --uuid :: MultiDb ByteString
 --uuid = undefined
-
-newtype Key a = Key { fromKey :: ByteString }
-newtype Changeset a = Changeset { fromChangeset :: Object }
