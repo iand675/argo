@@ -7,7 +7,6 @@ module Zippy.Base.Model (
 	ErrorResponse(..),
 	stripPrefix,
 	Changeset(..),
-	Key,
 	jsonize
 ) where
 import Data.Aeson
@@ -15,8 +14,6 @@ import Data.Aeson.TH
 import Data.Char
 import Data.Text (Text)
 import Data.Monoid
-
-type Key a = Text
 
 stripPrefix i name = if i == 0
 	then downcase rest

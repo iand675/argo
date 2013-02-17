@@ -4,7 +4,8 @@
     {
       "name": "Server",
       "path": "server",
-      "folder_exclude_patterns": ["dist", "Zippy/Calendar", "Zippy/Chat", "Zippy/Contacts", "Zippy/Mail", "Zippy/Wiki"]
+      "folder_exclude_patterns": ["dist", "Zippy/Calendar", "Zippy/Chat", "Zippy/Contacts", "Zippy/Mail", "Zippy/Wiki"],
+      "file_exclude_patterns": ["*~", "#*#", ".#*"]
     },
     {
       "name": "Frontend",

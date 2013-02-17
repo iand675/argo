@@ -4,3 +4,4 @@ import Zippy.User.Web.Tests
 
 main = hspec $ do
 	userTests
+
