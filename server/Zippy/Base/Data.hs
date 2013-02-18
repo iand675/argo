@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings, FunctionalDependencies, MultiParamTypeClasses, Rank2Types #-}
 module Zippy.Base.Data (
-  Namespace(..),
   ByteString,
   module Data.Proxy,
   runData,
@@ -26,9 +25,6 @@ class DataRep a d | a -> d where
 data RiakConnection = RiakConnection
 data RedisConnection = RedisConnection
 data Pool a = Pool
-
-class Namespace a where
-  namespace :: Proxy a -> ByteString
 
 data DbConfig = DbConfig
                 { riakConnection :: Riak.Connection
