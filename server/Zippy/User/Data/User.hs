@@ -23,6 +23,12 @@ ownerLink = link "owner"
 memberLink :: Key User -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
 memberLink = link "member"
 
+creatorIx :: Key User -> (ByteString, Maybe ByteString)
+creatorIx = keyIndex "creator"
+
+assignedToIx :: Key User -> (ByteString, Maybe ByteString)
+assignedToIx = keyIndex "assignedTo"
+
 data User = User
 	{ username         :: Text
 	, name             :: Text
