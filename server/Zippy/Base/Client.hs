@@ -11,6 +11,10 @@ import Data.Monoid ((<>), mempty)
 import Data.Text (Text)
 import Network.HTTP.Conduit
 import Network.HTTP.Types
+import Zippy.Base.Common
+
+keyToBS :: Key a -> ByteString
+keyToBS = L.toStrict . fromKey
 
 data Error = Error { errorStatus :: Status, message :: L.ByteString }
 	deriving (Show, Eq)
