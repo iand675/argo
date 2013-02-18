@@ -1,21 +1,59 @@
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 module Zippy.Tasks.Data.List where
-import Zippy.Base.Data
+import Control.Monad
+import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.Maybe
+import Data.Proxy
+import Data.Text (Text)
+import Zippy.Base.Common
+import qualified Zippy.Riak.Content as C
+import qualified Zippy.Riak.Object as O
+import Zippy.Riak.Simple
+import Zippy.Tasks.Data.Group
+import Zippy.User.Data.User (User, user)
 
-class ListDestination a where {}
-instance ListDestination User where {}
-instance ListDestination Group where {}
+instance Namespace List where
+    namespace = const "list"
 
-createList :: ListDestination a => Key a -> List -> MultiDb (Key List)
-createList = undefined
+listIx :: Key List -> (ByteString, Maybe ByteString)
+listIx = keyIndex "list"
 
-getList :: Key List -> MultiDb (Maybe List)
-getList = undefined
+data List = List
+    { name :: Text
+    , owner :: Key User
+    }
 
-getLists :: ListDestination a => Key a -> MultiDb [List]
-getLists = undefined
+instance O.AsContent List where
+    fromContent = const Nothing
 
-updateList :: Key List -> Changeset List -> MultiDb List
-updateList = undefined
+list :: Proxy List
+list = Proxy
 
-archiveList :: Key List -> MultiDb ()
+createList :: List -> O.Riak b (Maybe (Key List))
+createList l = do
+   pr <- putNew list () l
+   return $! fmap Key $ C.key pr
+
+getList :: Key List -> O.Riak b (Maybe List)
+getList k = do
+    gr <- get list () k
+    return $! (O.fromContent <=< justOne . C.getContent) gr
+
+getGroupLists :: Key Group -> O.Riak b [{- TODO: Entity -} List]
+getGroupLists k = do
+    keys <- indexEq list (namespace group) (fromKey k)
+    values <- mapM (get list ()) keys
+    return $! mapMaybe (O.fromContent <=< justOne . C.getContent) values
+    --lists <- linkWalk k [(namespace list, Nothing, True)] list 
+
+getUserLists :: Key User -> O.Riak b [{- TODO: Entity -} List]
+getUserLists k = do
+    keys <- indexEq list (namespace user) (fromKey k)
+    values <- mapM (get list ()) keys
+    return $! mapMaybe (O.fromContent <=< justOne . C.getContent) values
+
+--updateList :: Key List -> Changeset List -> O.Riak List
+--updateList = undefined
+
+archiveList :: Key List -> O.Riak b ()
 archiveList = undefined
