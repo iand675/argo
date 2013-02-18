@@ -1,24 +1,27 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.User.Client where
 import Data.Monoid
 import Data.ByteString
 import Zippy.Base.Client
-import Zippy.User.Model.CurrentUser
-import Zippy.User.Model.User
+import Zippy.Base.Common
+import Zippy.User.Web.Models
 
 -- listUsers :: UserM [User]
 
--- createUser :: NewUser -> UserM (Maybe Self)
+createUser :: NewUser -> ClientResult (Maybe CurrentUser)
+createUser = post "/users"
+    [ bodyOn 200
+    , nothingOn 404
+    ]
 
 getCurrentUser :: ClientResult (Maybe CurrentUser)
-getCurrentUser = get "/v1/users/me"
+getCurrentUser = get "/users/me"
 	[ bodyOn 200 
 	, nothingOn 404
 	]
 
-getUser :: ByteString -> ClientResult (Maybe User)
-getUser username = get ("/v1/users/" <> username)
+getUser :: Key User -> ClientResult (Maybe User)
+getUser key = get ("/users/" <> keyToBS key)
 	[ bodyOn 200
 	, nothingOn 404
 	]
