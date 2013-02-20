@@ -3,3 +3,11 @@ dist/
 .DS_Store
 
 *.sublime-workspace
+/.vagrant
+/chef/Cheffile.lock
+/chef/cookbooks/apt/
+/chef/cookbooks/build-essential/
+/chef/cookbooks/nginx/
+/chef/cookbooks/ohai/
+/chef/cookbooks/riak/
+/chef/tmp/
