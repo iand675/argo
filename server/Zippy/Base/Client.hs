@@ -34,8 +34,11 @@ runClient r m = do
 	withManager $ \manager -> do
 		runReaderT m (ClientConfig base manager)
 
+nothingOn :: Int -> Handler a
 nothingOn code = (code, const Nothing)
-bodyOn code = (code, Just . jsonBody)
+
+bodyOn :: FromJSON a => Int -> Handler a
+bodyOn code = (code, jsonBody)
 
 jsonBody :: FromJSON a => Response L.ByteString -> Maybe a
 jsonBody = decode . responseBody

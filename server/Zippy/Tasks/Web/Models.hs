@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Zippy.Tasks.Web.Models where
 import Data.Time
+import Zippy.Base.Common
 import Zippy.Base.Model
 import Zippy.User.Web.Models
 
