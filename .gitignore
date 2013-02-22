@@ -11,3 +11,4 @@ dist/
 /chef/cookbooks/ohai/
 /chef/cookbooks/riak/
 /chef/tmp/
+/chef/cookbooks/redis/
