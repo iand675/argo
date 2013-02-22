@@ -301,7 +301,7 @@ searchQuery req = do
     _ -> throw $ M.UnexpectedResponse resp
 
 runProto :: Connection -> O.RiakProto a -> IO a
-runProto c p = runRiak c $ evalProto $ liftProgram p
+runProto c p = runRiak c $ evalProto $ liftProgram $ O.unwrapRiakProgram p
 
 evalProto :: ProgramT (O.RiakOp O.Proto) Riak a -> Riak a
 evalProto = viewT >=> eval

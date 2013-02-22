@@ -1,5 +1,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Zippy.Riak.Object where
 import Control.Monad.Operational
 import qualified Zippy.Riak.Content as C
@@ -66,7 +67,6 @@ class AsContent a where
         , C.lastModifiedUsecs = Nothing
         , C.deleted           = Nothing
         }
-
 
     value :: a -> ByteString
     value = const ""
@@ -232,36 +232,37 @@ data RiakOp b a where
     ListKeysOp :: Bucket -> RiakOp b [Key]
     PingOp :: RiakOp b Bool
 
-type RiakHTTP = Program (RiakOp HTTP)
-type RiakProto = Program (RiakOp Proto)
-type Riak a = Program (RiakOp a)
+type RiakHTTP = Riak HTTP
+type RiakProto = Riak Proto
+newtype Riak b a = Riak { unwrapRiakProgram :: Program (RiakOp b) a }
+    deriving (Functor, Monad)
 
 get :: C.GetRequest -> Riak backend (C.GetResponse a)
-get = singleton . GetOp
+get = Riak . singleton . GetOp
 
 put :: C.PutRequest a -> Riak backend (C.PutResponse a)
-put = singleton . PutOp
+put = Riak . singleton . PutOp
 
 delete :: C.DeleteRequest -> Riak backend ()
-delete = singleton . DeleteOp
+delete = Riak . singleton . DeleteOp
 
 index :: Bucket -> Index -> IndexQuery -> Riak backend [Key]
-index b i q = singleton $ IndexOp b i q
+index b i q = Riak . singleton $ IndexOp b i q
 
 listBuckets :: Riak backend [Bucket]
-listBuckets = singleton ListBucketsOp
+listBuckets = Riak $ singleton ListBucketsOp
 
 getClientId :: ProtoTransport t => Riak t ByteString
-getClientId = singleton GetClientIdOp
+getClientId = Riak $ singleton GetClientIdOp
 
 setClientId :: ProtoTransport t => ByteString -> Riak t ()
-setClientId = singleton . SetClientIdOp
+setClientId = Riak . singleton . SetClientIdOp
 
 listKeys :: Bucket -> Riak backend [Key]
-listKeys = singleton . ListKeysOp
+listKeys = Riak . singleton . ListKeysOp
 
 ping :: Riak backend Bool
-ping = singleton PingOp
+ping = Riak $ singleton PingOp
 
 jsonContent :: Maybe ByteString
 jsonContent = Just "application/json"
