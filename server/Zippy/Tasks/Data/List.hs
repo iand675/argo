@@ -2,6 +2,7 @@
 module Zippy.Tasks.Data.List where
 import Control.Monad
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.Either
 import Data.Maybe
 import Data.Proxy
 import Data.Text (Text)
@@ -14,6 +15,7 @@ import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
 import Zippy.Tasks.Data.Group
 import qualified Zippy.Tasks.Domain.Models as Domain
+import qualified Zippy.User.Domain.Models as Domain
 import Zippy.User.Data.User (User, user)
 
 domainToData :: Domain.List -> List
@@ -69,21 +71,30 @@ createList l = riak $ do
     pr <- putNew list () $ domainToData l
     return $! fmap Key $ ifNothing AlreadyExists $ C.key pr
 
-getList :: Key List -> MultiDb Domain.List
+getList :: Key Domain.List -> MultiDb Domain.List
 getList k = riak $ do
-    gr <- get list () k
+    gr <- get list () $ rekey k
     return $! fmap fromData $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
 
 getGroupLists :: Key Domain.Group -> MultiDb [{- TODO: Entity -} Domain.List]
-getGroupLists k = riak undefined
+getGroupLists k = do
+    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace group) $ fromKey k
+    case mkeys of
+        Left err -> return $ Left err
+        Right keys -> fmap (Right . rights) $ mapM getList keys
+
 --do
     --keys <- indexEq list (namespace group) (fromKey k)
     --values <- mapM (get list ()) keys
     --return $! mapMaybe (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) values
     --lists <- linkWalk k [(namespace list, Nothing, True)] list 
 
-getUserLists :: Key User -> MultiDb [{- TODO: Entity -} List]
-getUserLists k = riak $ undefined
+getUserLists :: Key Domain.User -> MultiDb [{- TODO: Entity -} Domain.List]
+getUserLists k = do
+    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace user) $ fromKey k
+    case mkeys of
+        Left err -> return $ Left err
+        Right keys -> fmap (Right . rights) $ mapM getList keys
     --do
     --keys <- indexEq list (namespace user) (fromKey k)
     --values <- mapM (get list ()) keys
