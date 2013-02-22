@@ -2,6 +2,7 @@
 module Zippy.Tasks.Domain.Models where
 import Data.Time
 import Data.Text (Text)
+import Zippy.Base.Common
 import Zippy.Base.Domain
 import Zippy.Base.Model (Changeset(..))
 import qualified Zippy.Tasks.Web.Models as Web
@@ -29,12 +30,23 @@ data ListType = Plain
 
 data List = List
     { listName           :: Text
-    , listType           :: ListType
     , listOwner          :: Key User
+    , listCreator        :: Key User
     , listAdministrators :: [Key User]
     , listGroup          :: Maybe (Key Group)
     , listCreatedAt      :: UTCTime
-    , listIcon           :: Text
+    , listIcon           :: Maybe Text
+    }
+
+asList :: List -> Web.List
+asList l = Web.List
+    { Web.listName           = listName l
+    , Web.listOwner          = rekey $ listOwner l
+    , Web.listCreator        = rekey $ listCreator l
+    , Web.listAdministrators = map rekey $ listAdministrators l
+    , Web.listGroup          = fmap rekey $ listGroup l
+    , Web.listCreatedAt      = listCreatedAt l
+    , Web.listIcon           = listIcon l
     }
 
 data Group = Group

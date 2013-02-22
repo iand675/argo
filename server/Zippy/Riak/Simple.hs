@@ -30,7 +30,3 @@ class Indexable a where
 instance Indexable ByteString where
     indexEq p ix val = fmap (map Key) $ O.index (namespace p) ix $ O.StringQuery $ O.Key val
     indexRange p ix low high = fmap (map Key) $ O.index (namespace p) ix $ O.StringQuery $ O.Range low high
-
-justOne :: [a] -> Maybe a
-justOne (x:[]) = Just x
-justOne _ = Nothing

@@ -48,19 +48,17 @@ data ListChangeset = ListChangeset
     }
 
 data List = List
-    { listId             :: Key List
-    , listName           :: Text
-    , listCreator        :: User
-    , listAdministrators :: [User]
-    , listGroup          :: Group
-    , listCreatedDate    :: UTCTime
-    , listModifiedDate   :: UTCTime
-    , listIcon           :: Text
-    , listTasks          :: [Task]
+    { listName           :: Text
+    , listOwner          :: Key User
+    , listCreator        :: Key User
+    , listAdministrators :: [Key User]
+    , listGroup          :: Maybe (Key Group)
+    , listCreatedAt      :: UTCTime
+    , listIcon           :: Maybe Text
     }
 
 data NewGroup = NewGroup
-    { newGroupName    :: Text 
+    { newGroupName    :: Text
     , newGroupMembers :: Maybe [Key User]
     }
 

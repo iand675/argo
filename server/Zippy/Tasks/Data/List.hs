@@ -1,16 +1,31 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses, TemplateHaskell #-}
 module Zippy.Tasks.Data.List where
 import Control.Monad
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Maybe
 import Data.Proxy
 import Data.Text (Text)
+import Data.Time.Clock
 import Zippy.Base.Common
+import Zippy.Base.Data
+import Zippy.Base.Model
 import qualified Zippy.Riak.Content as C
 import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
 import Zippy.Tasks.Data.Group
+import qualified Zippy.Tasks.Domain.Models as Domain
 import Zippy.User.Data.User (User, user)
+
+domainToData :: Domain.List -> List
+domainToData l = List
+    { listName = Domain.listName l
+    , listOwner = rekey $ Domain.listOwner l
+    , listCreator = rekey $ Domain.listCreator l
+    , listAdministrators = map rekey $ Domain.listAdministrators l
+    , listGroup = fmap rekey $ Domain.listGroup l
+    , listCreatedAt = Domain.listCreatedAt l
+    , listIcon = Domain.listIcon l
+    }
 
 instance Namespace List where
     namespace = const "list"
@@ -19,41 +34,63 @@ listIx :: Key List -> (ByteString, Maybe ByteString)
 listIx = keyIndex "list"
 
 data List = List
-    { name :: Text
-    , owner :: Key User
+    { listName :: Text
+    , listOwner :: Key User
+    , listCreator :: Key User
+    , listAdministrators :: [Key User]
+    , listGroup :: Maybe (Key Group)
+    , listCreatedAt :: UTCTime
+    , listIcon :: Maybe Text
     }
 
+deriveJSON id ''List
+
 instance O.AsContent List where
-    fromContent = const Nothing
+    fromContent = decode . C.value
+    value = encode
+    contentType = const O.jsonContent
+
+instance DataRep Domain.List List where
+    fromData l = Domain.List
+        { Domain.listName = listName l
+        , Domain.listOwner = rekey $ listOwner l
+        , Domain.listCreator = rekey $ listCreator l
+        , Domain.listAdministrators = map rekey $ listAdministrators l
+        , Domain.listGroup = fmap rekey $ listGroup l
+        , Domain.listCreatedAt = listCreatedAt l
+        , Domain.listIcon = listIcon l
+        }
 
 list :: Proxy List
 list = Proxy
 
-createList :: List -> O.Riak b (Maybe (Key List))
-createList l = do
-   pr <- putNew list () l
-   return $! fmap Key $ C.key pr
+createList :: Domain.List -> MultiDb (Key Domain.List)
+createList l = riak $ do
+    pr <- putNew list () $ domainToData l
+    return $! fmap Key $ ifNothing AlreadyExists $ C.key pr
 
-getList :: Key List -> O.Riak b (Maybe List)
-getList k = do
+getList :: Key List -> MultiDb Domain.List
+getList k = riak $ do
     gr <- get list () k
-    return $! (O.fromContent <=< justOne . C.getContent) gr
+    return $! fmap fromData $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
 
-getGroupLists :: Key Group -> O.Riak b [{- TODO: Entity -} List]
-getGroupLists k = do
-    keys <- indexEq list (namespace group) (fromKey k)
-    values <- mapM (get list ()) keys
-    return $! mapMaybe (O.fromContent <=< justOne . C.getContent) values
+getGroupLists :: Key Domain.Group -> MultiDb [{- TODO: Entity -} Domain.List]
+getGroupLists k = riak undefined
+--do
+    --keys <- indexEq list (namespace group) (fromKey k)
+    --values <- mapM (get list ()) keys
+    --return $! mapMaybe (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) values
     --lists <- linkWalk k [(namespace list, Nothing, True)] list 
 
-getUserLists :: Key User -> O.Riak b [{- TODO: Entity -} List]
-getUserLists k = do
-    keys <- indexEq list (namespace user) (fromKey k)
-    values <- mapM (get list ()) keys
-    return $! mapMaybe (O.fromContent <=< justOne . C.getContent) values
+getUserLists :: Key User -> MultiDb [{- TODO: Entity -} List]
+getUserLists k = riak $ undefined
+    --do
+    --keys <- indexEq list (namespace user) (fromKey k)
+    --values <- mapM (get list ()) keys
+    --return $! mapMaybe (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) values
 
 --updateList :: Key List -> Changeset List -> O.Riak List
 --updateList = undefined
 
-archiveList :: Key List -> O.Riak b ()
-archiveList = undefined
+archiveList :: Key List -> MultiDb ()
+archiveList k = undefined

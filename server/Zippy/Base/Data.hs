@@ -10,7 +10,8 @@ module Zippy.Base.Data (
   DbConfig,
   DataRep(..),
   DataError(..),
-  ifNothing
+  ifNothing,
+  justOne
 ) where
 import Control.Monad.Reader
 import Control.Monad.Trans
@@ -35,6 +36,11 @@ ifNothing :: b -> Maybe a -> Either b a
 ifNothing l mr = case mr of
   Nothing -> Left l
   Just r -> Right r
+
+justOne :: [a] -> Either DataError a
+justOne [] = Left NotFound
+justOne (x:[]) = Right x
+justOne _ = Left DataConflict
 
 data RiakConnection = RiakConnection
 data RedisConnection = RedisConnection

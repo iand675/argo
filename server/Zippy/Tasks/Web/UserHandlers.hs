@@ -2,7 +2,6 @@
 module Zippy.Tasks.Web.UserHandlers where
 import Control.Monad.Trans
 import Data.Time.Clock
-import Network.HTTP.Types.Status
 import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.Web
