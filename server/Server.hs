@@ -33,11 +33,11 @@ routes conf = do
 	post   "lists/:list/tasks"   $ withConf createListTask
 	----
 	get    "tasks"               $ withConf listTasks
-	post   "tasks"               $ withConf createInboxTask
+	post   "tasks"               $ withConf createTask
 	get    "tasks/:task"         $ withConf getTask
 	post   "tasks/:task"         $ withConf updateTask
 	delete "tasks/:task"         $ withConf archiveTask
-	---- 
+	----
 	get    "users"               $ withConf listUsers
 	post   "users"               $ withConf createUser
 	get    "users/me"            $ withConf getCurrentUser

@@ -1,16 +1,19 @@
 {-# LANGUAGE OverloadedStrings, FunctionalDependencies, MultiParamTypeClasses, Rank2Types #-}
 module Zippy.Base.Data (
-  ByteString,
   module Data.Proxy,
   runData,
+  riak,
   redis,
   MultiDb,
   initialize,
   shutdown,
   DbConfig,
-  DataRep(..)
+  DataRep(..),
+  DataError(..),
+  ifNothing
 ) where
 import Control.Monad.Reader
+import Control.Monad.Trans
 import Data.Aeson.Types
 import Data.ByteString.Char8 (ByteString)
 import Data.Proxy
@@ -19,8 +22,19 @@ import qualified Zippy.Riak.Object as O
 import qualified Zippy.Riak.Connection as Riak
 import qualified Zippy.Riak.ProtoBufImpl as Riak
 
+data DataError = NotFound
+               | AlreadyExists
+               | DeserializationError
+               | DataConflict
+               deriving (Read, Show, Eq)
+
 class DataRep a d | a -> d where
   fromData :: d -> a
+
+ifNothing :: b -> Maybe a -> Either b a
+ifNothing l mr = case mr of
+  Nothing -> Left l
+  Just r -> Right r
 
 data RiakConnection = RiakConnection
 data RedisConnection = RedisConnection
@@ -33,7 +47,7 @@ data DbConfig = DbConfig
                 , metricTracker :: ByteString -> IO ()
                 }
 
-type MultiDb = ReaderT DbConfig IO
+type MultiDb a = ReaderT DbConfig IO (Either DataError a)
 
 initialize = do
   redisConn <- connect defaultConnectInfo
@@ -46,20 +60,20 @@ initialize = do
 
 shutdown c = runRedis (redisConnection c) quit
 
-runData :: MultiDb a -> IO a
-runData m = do
+runData :: MonadIO m => MultiDb a -> m (Either DataError a)
+runData m = liftIO $ do
   conf <- initialize
   result <- runReaderT m conf
   runRedis (redisConnection conf) quit
   Riak.disconnect (riakConnection conf)
   return result
 
-riak :: O.RiakProto a -> MultiDb a
+riak :: O.RiakProto (Either DataError a) -> MultiDb a
 riak m = do
   conf <- ask
   liftIO $ (riakHandler conf) (riakConnection conf) m
 
-redis :: Redis a -> MultiDb a
+redis :: Redis (Either DataError a) -> MultiDb a
 redis m = do
   conn <- fmap redisConnection ask
   liftIO $ runRedis conn m

@@ -28,4 +28,7 @@ index i v = (i, Just v)
 keyIndex :: ByteString -> Key a -> (ByteString, Maybe ByteString)
 keyIndex i k = index i $ fromKey k
 
+rekey :: Key a -> Key b
+rekey = Key . fromKey
+
 data Entity a = Entity { key :: Key a, value :: a }

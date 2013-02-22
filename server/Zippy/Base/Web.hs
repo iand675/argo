@@ -4,6 +4,7 @@ import Control.Monad.Reader
 import Control.Monad.Trans
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.Text.Lazy as L
+import qualified Data.Text.Lazy.Encoding as L
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Text (Text)
 import Data.Text.Encoding
@@ -13,6 +14,7 @@ import Network.HTTP.Types.Status
 import Network.Wai
 import Web.Cookie
 import qualified Web.Scotty as S
+import Zippy.Base.Data (DataError(..))
 
 hSetCookie = "Set-Cookie"
 
@@ -104,3 +106,14 @@ next :: Handler c a
 next = lift S.next
 
 type Handler c = ReaderT c S.ActionM
+
+instance S.Parsable ByteString where
+	parseParam = Right . L.encodeUtf8
+
+handleDataError :: DataError -> Handler c ()
+handleDataError e = case e of
+	NotFound -> status notFound404
+	AlreadyExists -> status badRequest400
+	DeserializationError -> status internalServerError500
+	DataConflict -> status conflict409
+

@@ -2,8 +2,8 @@
 module Zippy.Tasks.Web.ListHandlers where
 import Zippy.Base.Web
 
-getLists :: Handler c ()
-getLists = raise "unimplemented"
+listLists :: Handler c ()
+listLists = raise "unimplemented"
 
 getList :: Handler c ()
 getList = raise "unimplemented"
@@ -11,8 +11,8 @@ getList = raise "unimplemented"
 updateList :: Handler c ()
 updateList = raise "unimplemented"
 
-deleteList :: Handler c ()
-deleteList = raise "unimplemented"
+archiveList :: Handler c ()
+archiveList = raise "unimplemented"
 
 getListTasks :: Handler c ()
 getListTasks = raise "unimplemented"

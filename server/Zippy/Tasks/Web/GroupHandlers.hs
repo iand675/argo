@@ -14,8 +14,8 @@ getGroup = raise "unimplemented"
 updateGroup :: Handler c ()
 updateGroup = raise "unimplemented"
 
-deleteGroup :: Handler c ()
-deleteGroup = raise "unimplemented"
+archiveGroup :: Handler c ()
+archiveGroup = raise "unimplemented"
 
 getGroupLists :: Handler c ()
 getGroupLists = raise "unimplemented"
@@ -28,3 +28,6 @@ getGroupUsers = raise "unimplemented"
 
 addUserToGroup :: Handler c ()
 addUserToGroup = raise "unimplemented"
+
+getUserLists :: Handler c ()
+getUserLists = raise "unimplemented"

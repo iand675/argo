@@ -36,29 +36,6 @@ Vagrant::Config.run do |config|
   # folder, and the third is the path on the host to the actual folder.
   # config.vm.share_folder "v-data", "/vagrant_data", "../data"
 
-  # Enable provisioning with Puppet stand alone.  Puppet manifests
-  # are contained in a directory path relative to this Vagrantfile.
-  # You will need to create the manifests directory and a manifest in
-  # the file base.pp in the manifests_path directory.
-  #
-  # An example Puppet manifest to provision the message of the day:
-  #
-  # # group { "puppet":
-  # #   ensure => "present",
-  # # }
-  # #
-  # # File { owner => 0, group => 0, mode => 0644 }
-  # #
-  # # file { '/etc/motd':
-  # #   content => "Welcome to your Vagrant-built virtual machine!
-  # #               Managed by Puppet.\n"
-  # # }
-  #
-  # config.vm.provision :puppet do |puppet|
-  #   puppet.manifests_path = "manifests"
-  #   puppet.manifest_file  = "base.pp"
-  # end
-
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding 
   # some recipes and/or roles.
@@ -69,9 +46,16 @@ Vagrant::Config.run do |config|
     chef.data_bags_path = "chef/data_bags"
     chef.add_recipe("apt")
     chef.add_recipe("riak")
+    chef.add_recipe("redis::source")
     chef.add_recipe("build-essential")
     chef.add_recipe("nginx")
     chef.add_recipe("ghc")
+    # chef.add_recipe("alex")
+    # chef.add_recipe("hprotoc")
+    # chef.add_recipe("happy")
+    # configure riak to listen on the correct ip
+    # set up nginx sites-enabled to run zippy
+
   #   # You may also specify custom JSON attributes:
   #   chef.json = { :mysql_password => "foo" }
   end
