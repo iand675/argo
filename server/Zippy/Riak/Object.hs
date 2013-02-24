@@ -133,7 +133,7 @@ class Put a where
     ifNoneMatch = const Nothing
 
     vclock :: a -> Maybe ByteString
-    vclock = const Nothing    
+    vclock = const Nothing
 
     returnHead :: a -> Maybe Bool
     returnHead = const Nothing
