@@ -61,7 +61,7 @@ bash "build and install cabal-install" do
 	cwd "/tmp"
 	code <<-EOS
 		tar xzvf #{local_cabal_install_tarball}
-		cd cabal-install-1.16.0
+		cd cabal-install-1.16.0.2
 		sh bootstrap.sh --global
 	EOS
 
