@@ -1,0 +1,84 @@
+doctype 5
+html(ng-app='app')
+  head
+    title Zippy
+    link(rel='stylesheet', href='../stylesheets/normalize.css')
+    link(rel='stylesheet', href='../stylesheets/font-awesome.css')
+    link(rel='stylesheet', href='../stylesheets/main.css')
+  body
+    //- .header
+    //-   h1.brand: a(href="#").brand Brand Name
+    .content
+      .navbar
+        .tasks.active: i.icon-check.icon-3x
+        .mail: i.icon-envelope-alt.icon-3x
+        .calendar: i.icon-calendar.icon-3x
+        .contacts: i.icon-user.icon-3x
+        .wiki: i.icon-globe.icon-3x
+        .chat: i.icon-comment.icon-3x
+      .app-container
+        .app-header
+          h1.name Projects
+        .appbar
+          h2.section
+            |  Smart Lists
+          h4.list.active
+            i.icon-list-alt
+            |  Inbox
+            span.label 5
+          h4.list
+            i.icon-list-alt
+            |  Due Soon
+            span.label 2
+          h2.section
+            |  Personal
+          h4.category
+            i.icon-folder-open
+            |  Secret Project
+          ul.unstyled
+            li: h4.list
+              i.icon-list-alt
+              |  Task list for secret project
+              span.label 0
+          h2.section
+            |  Groups
+          h3.group Zippy
+          ul.unstyled
+            li: h4.list
+              i.icon-list-alt
+              |  Frontend
+              span.label 0
+            li: h4.list
+              i.icon-list-alt
+              |  Backend
+              span.label 10
+            li: h4.list
+              i.icon-list-alt
+              |  Support
+              span.label 0
+            li: h4.list
+              i.icon-list-alt
+              |  Marketing
+              span.label 0
+          h3.group Logos
+          ul.unstyled
+            li: h4.list
+              i.icon-list-alt
+              |  OAuth
+              span.label 0
+            li: h4.list
+              i.icon-list-alt
+              |  Community Services
+              span.label 0
+          h3.group Home
+          ul.unstyled
+            li: h4.list
+              i.icon-list-alt
+              |  Errands
+              span.label 0
+            li: h4.list
+              i.icon-list-alt
+              |  Grocery List
+              span.label 0
+        .app
+          h2 Inbox

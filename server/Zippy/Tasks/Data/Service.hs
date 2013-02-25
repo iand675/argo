@@ -24,9 +24,6 @@ createTask k t = do
     taskKey <- produceKey
     riak $ link k taskKey
 
-        
-
-
 getTask :: Key Domain.Task -> MultiDb (Maybe Domain.Task)
 getTask = undefined
 

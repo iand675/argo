@@ -1,14 +1,24 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Tasks.Data.Group where
+import Control.Monad
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Proxy
 import Data.Time
 import Zippy.Base.Common
+import Zippy.Base.Data
 import Zippy.Base.Model
 import qualified Zippy.Riak.Content as C
 import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
+import qualified Zippy.Tasks.Domain.Models as Domain
 import Zippy.User.Data.User (User)
+
+domainToData :: Domain.Group -> Group
+domainToData g = Group
+	{ name = Domain.groupName g
+	, owner = rekey $ Domain.groupOwner g
+	, members = map rekey $ Domain.groupMembers g
+	}
 
 group :: Proxy Group
 group = Proxy
@@ -36,20 +46,27 @@ instance O.AsContent Group where
 	links u = (ownerLink $ owner u) : map memberLink (members u)
 	contentType = const O.jsonContent
 
-createGroup :: Group -> O.Riak b (Maybe (Key Group))
-createGroup g = do
-	pr <- putNew group () g
-	return $! fmap Key $ C.key pr
+instance DataRep Domain.Group Group where
+	fromData g = Domain.Group
+		{ Domain.groupName = name g
+		, Domain.groupOwner = rekey $ owner g
+		, Domain.groupMembers = map rekey $ members g
+		}
 
-getGroup :: Key Group -> O.Riak b (Maybe Group)
-getGroup k = do
-	gr <- get group () k
-	case C.getContent gr of
-		[] -> return Nothing
-		(u:[]) -> return $ O.fromContent u
-		_ -> return Nothing
+createGroup :: Domain.Group -> MultiDb (Key Domain.Group)
+createGroup g = riak $ do
+	pr <- putNew group () $ domainToData g
+	return $ case C.key pr of
+		Nothing -> Left DataConflict
+		Just k -> Right $ Key k
 
-getGroups :: Key a -> O.Riak b [Group]
+getGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
+getGroup k = riak $ do
+	gr <- get group () $ rekey k
+	return $ fmap (Entity k . fromData) $
+		(ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
+
+getGroups :: Key a -> MultiDb [Entity Domain.Group]
 getGroups = undefined
 
 -- updateGroup :: Key Group -> Changeset Group -> O.Riak b Group

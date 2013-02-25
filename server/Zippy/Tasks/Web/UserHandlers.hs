@@ -6,6 +6,8 @@ import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.Web
 import Zippy.User.Domain.Models
+import Zippy.User.Session
+import Zippy.User.Web.Models
 import qualified Zippy.User.Data.Service as S
 
 listUsers :: Handler c ()
@@ -13,36 +15,30 @@ listUsers = raise "unimplemented"
 
 createUser :: Handler c ()
 createUser = do
-	timestamp <- liftIO getCurrentTime
+	timestamp <- now
 	user <- jsonData
-	mCreated <- runData $ S.createUser $ initializeUser user timestamp
-	case mCreated of
-		Left issue -> handleDataError issue
-		Right u -> json $ asCurrentUser $ value u
+	withData (S.createUser $ initializeUser user timestamp) (json . asCurrentUser . value)
 
 getUser :: Handler c ()
 getUser = do
 	userId <- param "user"
-	mu <- runData $ S.getUser $ Key userId
-	case mu of
-		Left issue -> handleDataError issue
-		Right u -> json $ asUser $ value u
+	withData (S.getUser $ Key userId) (json . asUser . value)
 
 getCurrentUser :: Handler c ()
 getCurrentUser = do
-	userId <- return "iand675"
-	mu <- runData $ S.getUser $ Key userId
-	case mu of
-		Left issue -> handleDataError issue
-		Right u -> json $ asCurrentUser $ value u
+	userId <- currentUserId
+	withData (S.getUser userId) (json . asCurrentUser . value)
 
 listUserGroups :: Handler c ()
 listUserGroups = raise "unimplemented"
 
 signIn :: Handler c ()
-signIn = raise "unimplemented"
-
---authorizeUser :: Handler c ()
---authorizeUser = do
---	signInDto <- jsonBody
---	service $ 
+signIn = do
+	return ()
+	--request <- jsonData
+	--mu <- runData $ S.signIn (signInUsername request) (signInPassword request)
+	--if mu
+	--	then do
+	--		session <- runData $ S.createSession $ Key $ signInUsername request
+	--		setCookie "zippy-session" k session
+	--	else status badRequest400

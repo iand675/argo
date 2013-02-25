@@ -31,10 +31,16 @@ data User = User
     , userEmail    :: Text
     } deriving (Read, Show, Eq)
 
+data SignInRequest = SignInRequest
+    { signInUsername :: Text
+    , signInPassword :: Text
+    } deriving (Read)
+
 instance Changeset CurrentUser UserChangeset where
     apply = undefined
 
 deriveJSON (stripPrefix 1) ''CurrentUser
 deriveJSON (stripPrefix 1) ''UserChangeset
-deriveJSON (stripPrefix 0) ''NewUser
+deriveJSON (stripPrefix 1) ''NewUser
 deriveJSON (stripPrefix 0) ''User
+deriveJSON (stripPrefix 2) ''SignInRequest

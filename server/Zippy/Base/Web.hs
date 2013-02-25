@@ -14,7 +14,7 @@ import Network.HTTP.Types.Status
 import Network.Wai
 import Web.Cookie
 import qualified Web.Scotty as S
-import Zippy.Base.Data (DataError(..))
+import Zippy.Base.Data (DataError(..), runData, MultiDb(..))
 
 hSetCookie = "Set-Cookie"
 
@@ -105,6 +105,9 @@ raise = lift . S.raise
 next :: Handler c a
 next = lift S.next
 
+now :: Handler c UTCTime
+now = liftIO getCurrentTime
+
 type Handler c = ReaderT c S.ActionM
 
 instance S.Parsable ByteString where
@@ -117,3 +120,9 @@ handleDataError e = case e of
 	DeserializationError -> status internalServerError500
 	DataConflict -> status conflict409
 
+withData :: MultiDb a -> (a -> Handler c ()) -> Handler c ()
+withData m f = do
+	mresult <- runData m
+	case mresult of
+		Left err -> handleDataError err
+		Right r -> f r

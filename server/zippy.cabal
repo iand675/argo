@@ -101,7 +101,8 @@ executable Server
                         Zippy.User.Data.User,
                         Zippy.User.Domain.Models,
                         Zippy.User.Web.Models,
-                        Zippy.User.Client
+                        Zippy.User.Client,
+                        Zippy.User.Session
 
     -- Other library packages from which modules are imported.
     build-depends:      base ==4.6.*,
@@ -124,7 +125,10 @@ executable Server
                         attoparsec,
                         attoparsec-binary,
                         network ==2.4.*,
-                        resource-pool
+                        resource-pool,
+                        unordered-containers,
+                        base64-bytestring,
+                        cryptohash
 
 -- test-suite WebTest
 --     type: exitcode-stdio-1.0
@@ -194,5 +198,5 @@ executable Server
 --                         wai,
 --                         time,
 --                         hedis,
---                         tagged
+--                         tagged,
 -- 

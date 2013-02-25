@@ -68,10 +68,9 @@ data GroupChangeset = GroupChangeset
     }
 
 data Group = Group
-    { groupId      :: Key Group
-    , groupName    :: Text
-    , groupOwner   :: User
-    , groupMembers :: [Sideload User]
+    { groupName    :: Text
+    , groupOwner   :: Key User
+    , groupMembers :: [Key User]
     --, groupLists   :: [Sideload List]
     }
 

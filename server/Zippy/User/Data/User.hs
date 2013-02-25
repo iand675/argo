@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 module Zippy.User.Data.User where
+import Crypto.Hash.SHA512
+import qualified Data.ByteString.Base64 as Base64
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.Text.Encoding
+import Data.Time.Clock (UTCTime)
 import Data.Proxy
-import Data.Text.Lazy (fromStrict)
-import Data.Text.Lazy.Encoding
-import Data.Time
 import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.Model
@@ -53,8 +54,8 @@ instance O.Put User where
 instance O.Get User
 instance O.Delete User
 
-createUser :: User -> O.Riak b (Either DataError (Key User))
-createUser u = do
+createUser :: User -> MultiDb (Key User)
+createUser u = riak $ do
 	let k = toKey $ username u
 	gr <- get user () k
 	case C.getContent gr of
@@ -63,10 +64,19 @@ createUser u = do
 			return $ Right k
 		_ -> return $ Left AlreadyExists
 
-getUser :: Key User -> O.Riak b (Either DataError User)
-getUser k = do
+getUser :: Key User -> MultiDb User
+getUser k = riak $ do
 	gr <- get user () k
 	case C.getContent gr of
 		[] -> return $ Left NotFound
 		(u:[]) -> return $ ifNothing DeserializationError $ O.fromContent u
 		_ -> return $ Left DataConflict
+
+-- username -> password -> bool
+signIn :: Text -> Text -> MultiDb Bool
+signIn username password = do
+	mUser <- getUser $ toKey username
+	let hashedPassword = decodeUtf8 $ Base64.encode $ hash $ encodeUtf8 password
+	return $ case mUser of
+		Left _ -> Right False
+		Right u -> Right (passwordHash u == hashedPassword)

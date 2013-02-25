@@ -29,15 +29,18 @@ entitize :: a -> Key b -> Entity a
 entitize x k = Entity (rekey k) x
 
 createUser :: Domain.User -> MultiDb (Entity Domain.User)
-createUser u = riak $ fmap combine $ Raw.createUser $ domainToData u
+createUser u = fmap combine $ Raw.createUser $ domainToData u
     where combine = fmap (entitize u)
 
 getUser :: Key Domain.User -> MultiDb (Entity Domain.User)
-getUser u = riak $ fmap combine $ Raw.getUser rawKey
+getUser u = fmap combine $ Raw.getUser rawKey
     where
         combine = fmap (Entity u . fromData)
         rawKey :: Key Raw.User
         rawKey = rekey u
+
+signIn :: Text -> Text -> MultiDb Bool
+signIn = Raw.signIn
 
 --redisKey :: Proxy a -> Key a -> ByteString
 --redisKey p k = toStrict (namespace p <> ":" <> fromKey k)

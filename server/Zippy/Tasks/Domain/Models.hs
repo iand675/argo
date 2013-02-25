@@ -8,7 +8,7 @@ import Zippy.Base.Model (Changeset(..))
 import qualified Zippy.Tasks.Web.Models as Web
 import Zippy.User.Domain.Models
 
-data Tag
+data Tag = Tag
 
 data Task = Task
     { taskName         :: Text
@@ -49,10 +49,35 @@ asList l = Web.List
     , Web.listIcon           = listIcon l
     }
 
+initializeList :: UTCTime -> Key User -> Web.NewList -> List
+initializeList t u l = List
+    { listName = Web.newListName l
+    , listOwner = rekey u
+    , listCreator = rekey u
+    , listAdministrators = map rekey $ maybe [] id $ Web.newListAdministrators l
+    , listGroup = fmap rekey $ Web.newListGroup l
+    , listCreatedAt = t
+    , listIcon = Web.newListIcon l
+    }
+
 data Group = Group
     { groupName    :: Text
     , groupOwner   :: Key User
     , groupMembers :: [Key User]
+    }
+
+asGroup :: Group -> Web.Group
+asGroup g = Web.Group
+    { Web.groupName = groupName g
+    , Web.groupOwner = rekey $ groupOwner g
+    , Web.groupMembers = map rekey $ groupMembers g
+    }
+
+initializeGroup :: Key User -> Web.NewGroup -> Group
+initializeGroup u g = Group
+    { groupName = Web.newGroupName g
+    , groupOwner = rekey u
+    , groupMembers = map rekey $ maybe [] id $ Web.newGroupMembers g
     }
 
 instance Changeset Task Web.TaskChangeset where

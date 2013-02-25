@@ -66,17 +66,18 @@ instance DataRep Domain.List List where
 list :: Proxy List
 list = Proxy
 
-createList :: Domain.List -> MultiDb (Key Domain.List)
+createList :: Domain.List -> MultiDb (Entity Domain.List)
 createList l = riak $ do
     pr <- putNew list () $ domainToData l
-    return $! fmap Key $ ifNothing AlreadyExists $ C.key pr
+    return $! fmap ((flip Entity $ l) . Key) $ ifNothing AlreadyExists $ C.key pr
 
-getList :: Key Domain.List -> MultiDb Domain.List
+getList :: Key Domain.List -> MultiDb (Entity Domain.List)
 getList k = riak $ do
     gr <- get list () $ rekey k
-    return $! fmap fromData $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
+    return $! fmap result $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
+    where result = Entity k . fromData
 
-getGroupLists :: Key Domain.Group -> MultiDb [{- TODO: Entity -} Domain.List]
+getGroupLists :: Key Domain.Group -> MultiDb [Entity Domain.List]
 getGroupLists k = do
     mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace group) $ fromKey k
     case mkeys of
@@ -89,7 +90,7 @@ getGroupLists k = do
     --return $! mapMaybe (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) values
     --lists <- linkWalk k [(namespace list, Nothing, True)] list 
 
-getUserLists :: Key Domain.User -> MultiDb [{- TODO: Entity -} Domain.List]
+getUserLists :: Key Domain.User -> MultiDb [Entity Domain.List]
 getUserLists k = do
     mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace user) $ fromKey k
     case mkeys of

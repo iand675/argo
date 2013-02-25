@@ -1,0 +1,200 @@
+@import 'grid.less';
+@import 'mixins.less';
+
+// grid settings
+@column-width: 30;
+@gutter-width: 10;
+@columns: 24;
+@total-width: 100%;
+
+// theme settings
+@navbar-size: 75px;
+@navbar-background: rgb(35, 35, 35);
+@appbar-background: rgb(220, 220, 210);
+@app-background: rgb(240, 242, 230);
+@footer-size: 50px;
+@green1: rgb(171, 205, 153);
+@green2: rgb(113, 177, 129);
+@green3: rgb(78, 150, 117);
+@green4: rgb(51, 124, 104);
+@green5: rgb(37, 108, 88);
+@green6: rgb(30, 86, 74);
+@orange1: rgb(210, 77, 35);
+@base-font-color: rgb(83, 83, 83);
+@serif: "Museo Slab", serif;
+// @sans-serif: "Museo Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+@sans-serif: "Helvetica Neue";
+
+html, body {
+	height: 100%;
+	font-family: @sans-serif;
+	color: darken(@base-font-color, 8%);
+}
+
+a {
+	text-decoration: none;
+}
+
+h1, h2, h3, h4, h5 {
+	margin: 0 0 0 0;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.rounded-corners (@radius: 5px) {
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+  -ms-border-radius: @radius;
+  -o-border-radius: @radius;
+  border-radius: @radius;
+}
+
+.content {
+	// margin-top: @navbar-size;
+	height: 100%;
+}
+
+.navbar {
+	height: 100%;
+	width: @navbar-size;
+	background-color: rgb(35,35,35);
+	float: left;
+	color: @green1;
+}
+
+.appbar {
+	height: 100%;
+	width: @navbar-size * 4;
+	background-color: @appbar-background;
+	float: left;
+	overflow: scroll;
+}
+
+.header {
+	width: 100%;
+	height: @navbar-size - 10px;
+	background-color: @green6;
+	border-bottom-style: solid;
+	border-bottom-width: 10px;
+	border-bottom-color: darken(@green6, 10%);
+	position: fixed;
+	top: 0;
+	a {
+		color: darken(@green6, 10%);
+	}
+}
+
+.tile (@color) {
+	height: @navbar-size;
+	width: @navbar-size;
+	background-color: @color;
+	color: lighten(@color, 15%);
+	text-align: center;
+	line-height: @navbar-size * 1.3;
+}
+
+ul.unstyled {
+	list-style-type: none;
+	padding-left: 10px;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.tasks {
+	.tile(@green1);
+}
+
+.mail {
+	.tile(@green2);
+}
+
+.calendar {
+	.tile(@green3);
+}
+
+.contacts {
+	.tile(@green4);
+}
+
+.wiki {
+	.tile(@green5);
+}
+
+.chat {
+	.tile(@green6);
+}
+
+.app {
+	height: 100%;
+	width: 100%;
+	background-color: @app-background;
+	display: inline-block;
+	margin-right: -5 * @navbar-size;
+	float: left;
+	padding-left: 10px;
+}
+
+.active {
+	background-color: @orange1;
+	color: white;
+}
+
+.appbar .active {
+	#gradient > .vertical(@green2, @green3);
+	color: white;
+}
+
+.appbar .section {
+	padding-left: 10px;
+}
+.appbar .list {
+	padding-left: 10px;
+}
+
+.appbar .section {
+	padding-left: 10px;
+}
+.appbar .category {
+	padding-left: 10px;
+}
+.appbar .group {
+	padding-left: 10px;
+}
+
+.appbar .label {
+	float: right;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-left: 10px;
+	margin-right: 10px;
+	background-color: darken(@appbar-background, 30%);
+	color: white;
+	.rounded-corners(10px);
+}
+
+.appbar .active .label {
+	background-color: @green6;
+}
+
+.brand, .brand :visited {
+	padding-left: 10px;
+	line-height: @navbar-size - 15px;
+	color: white;
+}
+
+.app-container {
+	height: 100%;
+	width: 100%;
+	display: inline-block;
+	float: left;
+	margin-right: -2 * @navbar-size;
+}
+
+.app-header {
+	padding-left: 10px;
+	#gradient > .vertical(@app-background, darken(@appbar-background, 10%));
+}
+
+.hover-action {
+	float: right;
+}
