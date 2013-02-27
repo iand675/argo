@@ -47,7 +47,7 @@ routes conf = do
 	get    "/users/:user/groups"  $ withConf listUserGroups
 	post   "/signin"              $ withConf signIn
 	----
-	notFound                     $ Web.Scotty.raise "not found"
+	notFound                      $ Web.Scotty.raise "not found"
 
 main = do
 	dbConf <- initialize

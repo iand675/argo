@@ -11,7 +11,7 @@ import Zippy.User.Web.Models
 import qualified Zippy.User.Data.Service as S
 
 listUsers :: Handler c ()
-listUsers = raise "unimplemented"
+listUsers = raise "listUsers: unimplemented"
 
 createUser :: Handler c ()
 createUser = do
@@ -30,7 +30,7 @@ getCurrentUser = do
 	withData (S.getUser userId) (json . asCurrentUser . value)
 
 listUserGroups :: Handler c ()
-listUserGroups = raise "unimplemented"
+listUserGroups = raise "listUserGroups: unimplemented"
 
 signIn :: Handler c ()
 signIn = do

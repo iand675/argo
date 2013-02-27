@@ -37,3 +37,8 @@ getListTasks = raise "unimplemented"
 
 createListTask :: Handler c ()
 createListTask = raise "unimplemented"
+
+getUserLists :: Handler c ()
+getUserLists = do
+	userId <- currentUserId
+	withData (L.getUserLists userId) (json . map (fmap asList))

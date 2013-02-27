@@ -30,9 +30,12 @@ getGroup = do
 			then json $ fmap asGroup g
 			else status notFound404
 
---updateGroup :: Handler c ()
---updateGroup = do
---	groupId <- group
+updateGroup :: Handler c ()
+updateGroup = do
+	raise "not ready yet"
+	--groupId <- group
+	--changeset <- jsonData
+	--withData (fmap applyChangeset (G.getGroup groupId) >>= G.updateGroup groupId)
 
 --archiveGroup :: Handler c ()
 --archiveGroup = do
@@ -53,10 +56,4 @@ getGroup = do
 --addUserToGroup :: Handler c ()
 --addUserToGroup = do
 --	groupId <- group
-
---getUserLists :: Handler c ()
---getUserLists = do
---	userId <- currentUserId
---	--withData (G.getUserLists userId)
---	return ()
 

@@ -130,29 +130,30 @@ executable Server
                         base64-bytestring,
                         cryptohash
 
--- test-suite WebTest
---     type: exitcode-stdio-1.0
---     main-is: WebTest.hs
---     build-depends:  base,
---                     http-conduit,
---                     http-types,
---                     text,
---                     resourcet,
---                     aeson,
---                     bytestring,
---                     hspec,
---                     HUnit,
---                     QuickCheck,
---                     containers,
---                     mtl,
---                     cookie,
---                     wai,
---                     time,
---                     hedis,
---                     tagged
---     other-modules:  Zippy.Base.Client
---                     Zippy.User.Web.Tests,
---                     Zippy.User.Client
+test-suite WebTest
+     type: exitcode-stdio-1.0
+     main-is: WebTest.hs
+     build-depends:  base,
+                     http-conduit,
+                     http-types,
+                     text,
+                     resourcet,
+                     aeson,
+                     bytestring,
+                     hspec,
+                     HUnit,
+                     QuickCheck,
+                     containers,
+                     mtl,
+                     cookie,
+                     wai,
+                     time,
+                     hedis,
+                     tagged,
+                     unordered-containers
+     other-modules:  Zippy.Base.Client
+                     Zippy.User.Web.Tests,
+                     Zippy.User.Client
 
 -- library
 --   -- Modules exported by the library.

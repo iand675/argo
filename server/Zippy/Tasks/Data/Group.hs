@@ -18,6 +18,7 @@ domainToData g = Group
 	{ name = Domain.groupName g
 	, owner = rekey $ Domain.groupOwner g
 	, members = map rekey $ Domain.groupMembers g
+	, active = Domain.groupActive g
 	}
 
 group :: Proxy Group
@@ -36,6 +37,7 @@ data Group = Group
 	{ name :: Text
 	, owner :: Key User
 	, members :: [Key User]
+	, active :: Bool
 	}
 
 deriveJSON id ''Group
@@ -51,6 +53,7 @@ instance DataRep Domain.Group Group where
 		{ Domain.groupName = name g
 		, Domain.groupOwner = rekey $ owner g
 		, Domain.groupMembers = map rekey $ members g
+		, Domain.groupActive = active g
 		}
 
 createGroup :: Domain.Group -> MultiDb (Key Domain.Group)
@@ -69,8 +72,12 @@ getGroup k = riak $ do
 getGroups :: Key a -> MultiDb [Entity Domain.Group]
 getGroups = undefined
 
--- updateGroup :: Key Group -> Changeset Group -> O.Riak b Group
--- updateGroup = undefined
+updateGroup :: Key Domain.Group -> Domain.Group -> MultiDb (Entity Domain.Group)
+updateGroup = undefined
 
-archiveGroup :: Key Group -> O.Riak b ()
-archiveGroup = undefined
+archiveGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
+archiveGroup k = do
+	mg <- getGroup k
+	case mg of
+		l@(Left _) -> return l
+		Right g -> updateGroup k $ (value g) { Domain.groupActive = False }

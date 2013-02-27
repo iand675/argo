@@ -64,6 +64,7 @@ data Group = Group
     { groupName    :: Text
     , groupOwner   :: Key User
     , groupMembers :: [Key User]
+    , groupActive  :: Bool
     }
 
 asGroup :: Group -> Web.Group

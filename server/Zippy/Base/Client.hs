@@ -11,10 +11,14 @@ import Data.Monoid ((<>), mempty)
 import Data.Text (Text)
 import Network.HTTP.Conduit
 import Network.HTTP.Types
+import Network.HTTP.Types.URI
 import Zippy.Base.Common
 
 keyToBS :: Key a -> ByteString
 keyToBS = L.toStrict . fromKey
+
+htmlKey :: Key a -> ByteString
+htmlKey = urlEncode False . keyToBS
 
 data Error = Error { errorStatus :: Status, message :: L.ByteString }
 	deriving (Show, Eq)
@@ -34,8 +38,8 @@ runClient r m = do
 	withManager $ \manager -> do
 		runReaderT m (ClientConfig base manager)
 
-nothingOn :: Int -> Handler a
-nothingOn code = (code, const Nothing)
+nothingOn :: Int -> Handler (Maybe a)
+nothingOn code = (code, const $ Just Nothing)
 
 bodyOn :: FromJSON a => Int -> Handler a
 bodyOn code = (code, jsonBody)
@@ -61,7 +65,7 @@ get :: FromJSON a => Route -> [Handler a] -> ClientResult a
 get r hs = requestRoute id id r hs ""
 
 post :: (ToJSON a, FromJSON b) => Route -> [Handler b] -> a -> ClientResult b
-post r hs x = requestRoute encode id r hs x
+post r hs x = requestRoute encode (\req -> req { method = "POST" }) r hs x
 
 post' :: Route -> [Handler a] -> ClientResult a
 post' r hs = requestRoute id (\req -> req { method = "POST" }) r hs ""
