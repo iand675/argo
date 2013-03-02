@@ -74,6 +74,8 @@ getCurrentUser = describe "GET /v1/users/me" $ do
 	it "should return 200 if the user is authenticated" $ do
 		result <- local C.getCurrentUser
 		assertBool (show result) $ (result /= Right Nothing) && not (isLeft result)
+	it "should return the current user if the user is authenticated" $ do
+		pending "not implemented"
 	it "should return 404 if unauthenticated" $ do
 		result <- local C.getCurrentUser
 		assertEqual "no current user" (Right Nothing) result
@@ -86,3 +88,7 @@ listUserGroups = describe "GET /v1/users/:user/groups" $ do
 		pending "not implemented"
 	it "should return not found if the user doesn't exist" $ do
 		pending "not implemented"
+	it "should return an empty list if the user is not a member of a group" $ do
+		(Right (Just newUser)) <- local . C.createUser =<< randomUser
+		result <- local $ C.listUserGroups $ toKey $ currentUserUsername newUser
+		assertBool (show result) $ fmap (fmap null) result == Right (Just True)

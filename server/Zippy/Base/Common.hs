@@ -33,6 +33,7 @@ rekey :: Key a -> Key b
 rekey = Key . fromKey
 
 data Entity a = Entity { key :: Key a, value :: a }
+	deriving (Read, Show, Eq)
 
 instance (ToJSON a) => ToJSON (Entity a) where
 	toJSON e = Object $ H.insert "_id" (toJSON $ fromKey $ key e) o

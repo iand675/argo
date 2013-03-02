@@ -65,7 +65,7 @@ data Group = Group
     , groupOwner   :: Key User
     , groupMembers :: [Key User]
     , groupActive  :: Bool
-    }
+    } deriving (Read, Show, Eq)
 
 asGroup :: Group -> Web.Group
 asGroup g = Web.Group
@@ -79,6 +79,7 @@ initializeGroup u g = Group
     { groupName = Web.newGroupName g
     , groupOwner = rekey u
     , groupMembers = map rekey $ maybe [] id $ Web.newGroupMembers g
+    , groupActive = True
     }
 
 instance Changeset Task Web.TaskChangeset where

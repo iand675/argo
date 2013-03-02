@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, EmptyDataDecls #-}
 module Zippy.User.Data.User where
 import Crypto.Hash.SHA512
 import qualified Data.ByteString.Base64 as Base64
@@ -12,6 +12,9 @@ import Zippy.Base.Model
 import Zippy.Riak.Simple
 import qualified Zippy.Riak.Object as O
 import qualified Zippy.Riak.Content as C
+
+-- Break cyclic imports by creating an abstract reference type for memberships field
+data Group
 
 instance Namespace User where
 	namespace = const "user"
@@ -40,6 +43,7 @@ data User = User
 	, stripeCustomerId :: Maybe Text
 	, company          :: Maybe Text
 	, createdAt        :: UTCTime
+	, memberships      :: [Key Group]
 	} deriving (Read, Show, Eq)
 
 deriveJSON id ''User

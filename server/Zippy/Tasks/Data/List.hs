@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Tasks.Data.List where
 import Control.Monad
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -13,7 +13,7 @@ import Zippy.Base.Model
 import qualified Zippy.Riak.Content as C
 import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
-import Zippy.Tasks.Data.Group
+import Zippy.Tasks.Data.Group hiding (User)
 import qualified Zippy.Tasks.Domain.Models as Domain
 import qualified Zippy.User.Domain.Models as Domain
 import Zippy.User.Data.User (User, user)

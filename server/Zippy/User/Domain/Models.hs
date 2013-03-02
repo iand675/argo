@@ -1,5 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Zippy.User.Domain.Models where
+import Control.Monad
 import Data.Time
 import Zippy.Base.Model
 import Zippy.Base.Data (DataRep(..))

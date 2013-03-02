@@ -72,7 +72,7 @@ data Group = Group
     , groupOwner   :: Key User
     , groupMembers :: [Key User]
     --, groupLists   :: [Sideload List]
-    }
+    } deriving (Read, Show, Eq)
 
 jsonize 0 ''Sideload
 

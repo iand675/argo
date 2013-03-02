@@ -1,4 +1,4 @@
-module ListTests where
+module Zippy.User.Web.ListTests where
 import Test.Hspec
 import Test.QuickCheck
 import Test.HUnit

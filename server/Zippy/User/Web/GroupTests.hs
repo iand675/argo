@@ -1,4 +1,4 @@
-module GroupTests where
+module Zippy.User.Web.GroupTests where
 import Test.Hspec
 import Test.QuickCheck
 import Test.HUnit

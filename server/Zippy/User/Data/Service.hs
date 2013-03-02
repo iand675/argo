@@ -23,6 +23,7 @@ domainToData u = Raw.User
     , Raw.stripeCustomerId = Domain.userStripeCustomerId u
     , Raw.company          = Domain.userCompany u
     , Raw.createdAt        = Domain.userCreatedAt u
+    , Raw.memberships      = []
     }
 
 entitize :: a -> Key b -> Entity a
