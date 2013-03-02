@@ -57,7 +57,7 @@ type MultiDb a = ReaderT DbConfig IO (Either DataError a)
 
 initialize = do
   redisConn <- connect defaultConnectInfo
-  riakConn <- Riak.connect (Just "127.0.0.1") Nothing
+  riakConn <- Riak.connect (Just "10.0.2.15") Nothing
   return $ DbConfig { riakConnection = riakConn
                     , riakHandler = Riak.runProto
                     , redisConnection = redisConn

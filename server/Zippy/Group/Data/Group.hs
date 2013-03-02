@@ -18,3 +18,4 @@ instance AsContent Group where
 	fromContent = decode . C.value
 	value = encode
 	links c = ownerLink (groupOwner c) : map memberLink (groupMembers c)
+	indexes c = 

@@ -1,8 +1,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, ScopedTypeVariables, OverloadedStrings #-}
 module Zippy.Base.Common where
+import Control.Applicative
 import Data.Aeson
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.HashMap.Strict as H
+import Data.Monoid
 import Data.Proxy
 import Data.Text (Text)
 import Data.Text.Lazy (fromStrict)
@@ -38,6 +40,13 @@ data Entity a = Entity { key :: Key a, value :: a }
 instance (ToJSON a) => ToJSON (Entity a) where
 	toJSON e = Object $ H.insert "_id" (toJSON $ fromKey $ key e) o
 		where (Object o) = toJSON (value e)
+
+instance (FromJSON a) => FromJSON (Entity a) where
+	parseJSON (Object v) = do
+		k <- v .: "_id"
+		val <- parseJSON $ Object $ H.delete "_id" v
+		return $ Entity k val
+	parseJSON _ = mempty
 
 instance Functor Entity where
 	fmap f (Entity k v) = Entity (rekey k) $ f v

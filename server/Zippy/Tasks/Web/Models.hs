@@ -7,45 +7,45 @@ import Zippy.User.Web.Models
 
 type Icon = Text
 
-data Sideload a = Reference { sideloadId :: Text }
-                | Loaded { sideloadValue :: a }
+data Sideload a = Reference { sideloadId :: Key a }
+                | Loaded { sideloadValue :: Entity a }
+                deriving (Read, Show, Eq)
 
 data NewTask = NewTask
     { newTaskName        :: Text
-    , newTaskDescription :: Text
-    , newTaskAssignedTo  :: Key User -- Username
-    }
+    , newTaskDescription :: Maybe Text
+    , newTaskAssignedTo  :: Maybe (Key User) -- Username
+    } deriving (Read, Show, Eq)
 
 data TaskChangeset = TaskChangeset
     { taskChangesetName        :: Maybe Text
     , taskChangesetDescription :: Maybe Text
-    , taskChangesetAssignedTo  :: Maybe (Key User)
-    }
+    , taskChangesetAssignedTo  :: Maybe (Maybe (Key User))
+    } deriving (Read, Show, Eq)
 
 data Task = Task
-    { taskId          :: Key Task
-    , taskName        :: Text
-    , taskDescription :: Text
+    { taskName        :: Text
+    , taskDescription :: Maybe Text
     , taskTags        :: [Text]
-    , taskCreator     :: User
+    , taskCreator     :: Key User
     , taskTasks       :: [Sideload Task]
-    , taskAssignedTo  :: User
-    , taskHistory     :: Sideload [()]
-    }
+    , taskAssignedTo  :: Maybe (Key User)
+    , taskHistory     :: [()]
+    } deriving (Read, Show, Eq)
 
 data NewList = NewList
     { newListName           :: Text
     , newListAdministrators :: Maybe [Key User]
     , newListGroup          :: Maybe (Key Group)
     , newListIcon           :: Maybe Text
-    }
+    } deriving (Read, Show, Eq)
 
 data ListChangeset = ListChangeset
     { listChangesetName           :: Maybe Text
     , listChangesetAdministrators :: Maybe [Key User]  -- ? should this be Maybe (Maybe [Key User])
     , listChangesetGroup          :: Maybe (Key Group) -- ? ^likewise
     , listChangesetIcon           :: Maybe Icon
-    }
+    } deriving (Read, Show, Eq)
 
 data List = List
     { listName           :: Text
@@ -55,17 +55,17 @@ data List = List
     , listGroup          :: Maybe (Key Group)
     , listCreatedAt      :: UTCTime
     , listIcon           :: Maybe Text
-    }
+    } deriving (Read, Show, Eq)
 
 data NewGroup = NewGroup
     { newGroupName    :: Text
     , newGroupMembers :: Maybe [Key User]
-    }
+    } deriving (Read, Show, Eq)
 
 data GroupChangeset = GroupChangeset
     { groupChangesetName  :: Maybe Text
     , groupChangesetOwner :: Maybe (Key User)
-    }
+    } deriving (Read, Show, Eq)
 
 data Group = Group
     { groupName    :: Text

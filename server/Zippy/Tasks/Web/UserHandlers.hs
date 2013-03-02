@@ -32,7 +32,9 @@ createUser = do
 	user <- jsonData
 	if not $ validateUser user
 		then status badRequest400
-		else withData (S.createUser $ initializeUser user timestamp) (json . asCurrentUser . value)
+		else withData (S.createUser $ initializeUser user timestamp) $ \r -> do
+			status created201
+			json $ asCurrentUser $ value r
 
 getUser :: Handler c ()
 getUser = do

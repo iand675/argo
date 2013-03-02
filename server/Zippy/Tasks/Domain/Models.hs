@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, OverloadedStrings #-}
 module Zippy.Tasks.Domain.Models where
 import Data.Time
 import Data.Text (Text)
@@ -9,6 +9,33 @@ import qualified Zippy.Tasks.Web.Models as Web
 import Zippy.User.Domain.Models
 
 data Tag = Tag
+    deriving (Read, Show, Eq)
+
+initializeTask :: UTCTime -> Key User -> Web.NewTask -> Task
+initializeTask ts k t = Task
+    { taskName = Web.newTaskName t
+    , taskDescription = Web.newTaskDescription t
+    , taskStatus = ""
+    , taskCreatedAt = ts
+    , taskDueAt = Nothing
+    , taskPriority = Nothing
+    , taskTags = []
+    , taskArchivedAt = Nothing
+    , taskTimeEstimate = Nothing
+    , taskCreator = k
+    , taskAssignedTo = Nothing
+    }
+
+asTask :: Task -> Web.Task
+asTask t = Web.Task
+    { Web.taskName         = taskName         t
+    , Web.taskDescription  = taskDescription  t
+    , Web.taskTags         = []
+    , Web.taskCreator      = rekey $ taskCreator t
+    , Web.taskAssignedTo   = fmap rekey $ taskAssignedTo t
+    , Web.taskTasks        = []
+    , Web.taskHistory      = []
+    }
 
 data Task = Task
     { taskName         :: Text
@@ -21,9 +48,9 @@ data Task = Task
     , taskArchivedAt   :: Maybe UTCTime
     , taskTimeEstimate :: Maybe Text
     , taskCreator      :: Key User
-    , taskAssignedTo   :: Key User
+    , taskAssignedTo   :: Maybe (Key User)
     --, taskRecurrences  :: Maybe RecurrenceRule
-    }
+    } deriving (Read, Show, Eq)
 
 data ListType = Plain
               | Smart
