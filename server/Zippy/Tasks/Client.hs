@@ -9,10 +9,10 @@ import Zippy.Tasks.Web.Models
 import Zippy.User.Web.Models
 
 basicHandlers :: FromJSON a => [Handler (Maybe a)]
-basicHandlers = [ bodyOn 200, nothingOn 404 ]
+basicHandlers = [ bodyOn 200, nothingOn 401, nothingOn 404 ]
 
 createdHandlers :: FromJSON a => [Handler (Maybe a)]
-createdHandlers = [ bodyOn 201, nothingOn 404 ]
+createdHandlers = [ bodyOn 201, nothingOn 401, nothingOn 404 ]
 
 createTask :: NewTask -> ClientResult (Maybe (Entity Task))
 createTask = post "/tasks" createdHandlers

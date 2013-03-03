@@ -14,18 +14,16 @@ listGroups = do
 	return ()
 
 createGroup :: Handler c ()
-createGroup = do
-	userKey <- currentUserId
+createGroup = authenticate (status unauthorized401) $ \userKey -> do
 	groupDto <- jsonData
 	let newGroup = initializeGroup userKey groupDto
 	withData (G.createGroup $ initializeGroup userKey groupDto) $ \g -> do
 		json $ Entity (rekey g) (asGroup newGroup)
 
 getGroup :: Handler c ()
-getGroup = do
+getGroup = authenticate (status unauthorized401) $ \userKey -> do
 	groupId <- group
 	withData (G.getGroup groupId) $ \g -> do
-		userKey <- currentUserId
 		if userKey == (groupOwner $ value g) || (any (== userKey) $ groupMembers $ value g)
 			then json $ fmap asGroup g
 			else status notFound404

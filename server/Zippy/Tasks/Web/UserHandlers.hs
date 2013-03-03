@@ -2,7 +2,9 @@
 module Zippy.Tasks.Web.UserHandlers where
 import Control.Monad.Trans
 import Data.Char
+import Data.Monoid
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as L
 import Data.Time.Clock
 import Network.HTTP.Types.Status
 import Zippy.Base.Common
@@ -30,10 +32,12 @@ createUser :: Handler c ()
 createUser = do
 	timestamp <- now
 	user <- jsonData
+	newUser <- liftIO $ initializeUser user timestamp
 	if not $ validateUser user
 		then status badRequest400
-		else withData (S.createUser $ initializeUser user timestamp) $ \r -> do
+		else withData (S.createUser newUser) $ \r -> do
 			status created201
+			header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (newUserUsername user) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
 			json $ asCurrentUser $ value r
 
 getUser :: Handler c ()
@@ -42,8 +46,7 @@ getUser = do
 	withData (S.getUser $ Key userId) (json . asUser . value)
 
 getCurrentUser :: Handler c ()
-getCurrentUser = do
-	userId <- currentUserId
+getCurrentUser = authenticate (status unauthorized401) $ \userId -> do
 	withData (S.getUser userId) (json . asCurrentUser . value)
 
 listUserGroups :: Handler c ()
@@ -53,7 +56,13 @@ listUserGroups = do
 
 signIn :: Handler c ()
 signIn = do
-	return ()
+	signInReq <- jsonData
+	withData (S.signIn (signInUsername signInReq) (signInPassword signInReq)) $ \mcookie ->
+		case mcookie of
+			Nothing -> status badRequest400
+			Just c -> do
+				status noContent204
+				header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (signInUsername signInReq) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
 	--request <- jsonData
 	--mu <- runData $ S.signIn (signInUsername request) (signInPassword request)
 	--if mu

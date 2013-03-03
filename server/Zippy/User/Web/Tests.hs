@@ -76,9 +76,9 @@ getCurrentUser = describe "GET /v1/users/me" $ do
 		assertBool (show result) $ (result /= Right Nothing) && not (isLeft result)
 	it "returns the current user if the user is authenticated" $ do
 		pending "not implemented"
-	it "returns 404 if unauthenticated" $ do
+	it "returns 401 if unauthenticated" $ do
 		result <- local C.getCurrentUser
-		assertEqual "no current user" (Right Nothing) result
+		assertEqual (show result) (Right Nothing) result
 
 listUserGroups :: Spec
 listUserGroups = describe "GET /v1/users/:user/groups" $ do

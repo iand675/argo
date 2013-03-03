@@ -40,7 +40,7 @@ getUser u = fmap combine $ Raw.getUser rawKey
         rawKey :: Key Raw.User
         rawKey = rekey u
 
-signIn :: Text -> Text -> MultiDb Bool
+signIn :: Text -> Text -> MultiDb (Maybe Text)
 signIn = Raw.signIn
 
 --redisKey :: Proxy a -> Key a -> ByteString

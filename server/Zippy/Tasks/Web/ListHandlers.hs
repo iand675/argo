@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Tasks.Web.ListHandlers where
 import Control.Monad.Trans
+import Network.HTTP.Types.Status
 import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.Web
@@ -13,11 +14,10 @@ listLists :: Handler c ()
 listLists = raise "unimplemented"
 
 createList :: Handler c ()
-createList = do
+createList = authenticate (status unauthorized401) $ \userId -> do
 	timestamp <- now
-	userKey <- currentUserId
 	list <- jsonData
-	withData (L.createList $ initializeList timestamp userKey list) (json . fmap asList)
+	withData (L.createList $ initializeList timestamp userId list) (json . fmap asList)
 
 getList :: Handler c ()
 getList = do
@@ -39,6 +39,5 @@ createListTask :: Handler c ()
 createListTask = raise "unimplemented"
 
 getUserLists :: Handler c ()
-getUserLists = do
-	userId <- currentUserId
+getUserLists = authenticate (status unauthorized401) $ \userId -> do
 	withData (L.getUserLists userId) (json . map (fmap asList))

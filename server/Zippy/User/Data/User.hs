@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, EmptyDataDecls #-}
 module Zippy.User.Data.User where
-import Crypto.Hash.SHA512
-import qualified Data.ByteString.Base64 as Base64
+import Crypto.PasswordStore
+import qualified Data.ByteString as B
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Text.Encoding
 import Data.Time.Clock (UTCTime)
@@ -39,7 +39,7 @@ data User = User
 	, name             :: Text
 	, avatar           :: Maybe Text
 	, email            :: Text
-	, passwordHash     :: Text
+	, passwordHash     :: B.ByteString
 	, stripeCustomerId :: Maybe Text
 	, company          :: Maybe Text
 	, createdAt        :: UTCTime
@@ -77,10 +77,11 @@ getUser k = riak $ do
 		_ -> return $ Left DataConflict
 
 -- username -> password -> bool
-signIn :: Text -> Text -> MultiDb Bool
-signIn username password = do
-	mUser <- getUser $ toKey username
-	let hashedPassword = decodeUtf8 $ Base64.encode $ hash $ encodeUtf8 password
-	return $ case mUser of
-		Left _ -> Right False
-		Right u -> Right (passwordHash u == hashedPassword)
+signIn :: Text -> Text -> MultiDb (Maybe Text)
+signIn key password = do
+	mUser <- getUser $ toKey key
+	case mUser of
+		Left _ -> return $ Right Nothing
+		Right u -> if verifyPassword (encodeUtf8 password) (passwordHash u)
+			then return $ Right $ Just $ username u
+			else return $ Right Nothing

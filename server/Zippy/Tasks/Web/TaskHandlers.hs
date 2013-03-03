@@ -8,11 +8,10 @@ import Zippy.Tasks.Domain.Models
 import qualified Zippy.Tasks.Data.Task as T
 
 createTask :: Handler c ()
-createTask = do
+createTask = authenticate (status unauthorized401) $ \userId -> do
 	timestamp <- now
-	userKey <- currentUserId
 	task <- jsonData
-	withData (T.createTask $ initializeTask timestamp userKey task) $ \r -> do
+	withData (T.createTask $ initializeTask timestamp userId task) $ \r -> do
 		status created201
 		json $ fmap asTask r
 
@@ -20,7 +19,9 @@ listTasks :: Handler c ()
 listTasks = raise "unimplemented"
 
 getTask :: Handler c ()
-getTask = raise "unimplemented"
+getTask = do
+	taskId <- param "task"
+	withData (T.getTask $ Key taskId) (json . asTask . value)
 
 updateTask :: Handler c ()
 updateTask = raise "unimplemented"

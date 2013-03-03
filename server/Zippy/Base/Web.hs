@@ -113,6 +113,9 @@ type Handler c = ReaderT c S.ActionM
 instance S.Parsable ByteString where
 	parseParam = Right . L.encodeUtf8
 
+instance S.Parsable Text where
+	parseParam = Right . L.toStrict
+
 handleDataError :: DataError -> Handler c ()
 handleDataError e = case e of
 	NotFound -> status notFound404
