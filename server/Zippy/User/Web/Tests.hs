@@ -2,6 +2,7 @@
 module Zippy.User.Web.Tests where
 import Data.Maybe
 import qualified Data.Text as T
+import Network.HTTP.Conduit
 import System.Random
 import Test.Hspec
 import Test.Hspec.HUnit
@@ -36,16 +37,20 @@ userTests = describe "User Tests" $ do
 	listUserGroups
 
 listUsers :: Spec
-listUsers = describe "GET /v1/users" $ do
+listUsers = describe "GET /users" $ do
 	return ()
 
 createUser :: Spec
-createUser = describe "POST /v1/users" $ do
+createUser = describe "POST /users" $ do
 	it "returns 201 Created when the user is created" $ do
 		result <- local . C.createUser =<< randomUser
 		assertBool (show result) $ (result /= Right Nothing) && not (isLeft result)
 	it "sets the cookie when the user is created" $ do
-		pending "not implemented"
+		aUser <- randomUser
+		(Right cookies) <- local $ do
+			C.createUser aUser
+			getCookies
+		assertBool (show cookies) $ any (\c -> cookie_name c == "ZippyAuth") cookies
 	it "requires an email address" $ do
 		result <- local . C.createUser . (\u -> u { newUserEmail = "" }) =<< randomUser
 		assertBool (show result) $ result == Right Nothing
@@ -60,7 +65,7 @@ createUser = describe "POST /v1/users" $ do
 		assertBool (show result) $ result == Right Nothing
 
 getUser :: Spec
-getUser = describe "GET /v1/users/:user" $ do
+getUser = describe "GET /users/:user" $ do
 	it "returns the user if the user does exist" $ do
 		(Right (Just newUser)) <- local . C.createUser =<< randomUser
 		result <- local $ C.getUser $ toKey $ currentUserUsername newUser
@@ -70,18 +75,25 @@ getUser = describe "GET /v1/users/:user" $ do
 		assertBool (show result) $ result == Right Nothing
 
 getCurrentUser :: Spec
-getCurrentUser = describe "GET /v1/users/me" $ do
+getCurrentUser = describe "GET /users/me" $ do
 	it "returns 200 if the user is authenticated" $ do
-		result <- local C.getCurrentUser
+		aUser <- randomUser
+		result <- local $ do
+			(Right (Just newUser)) <- C.createUser aUser
+			C.getCurrentUser
 		assertBool (show result) $ (result /= Right Nothing) && not (isLeft result)
 	it "returns the current user if the user is authenticated" $ do
-		pending "not implemented"
+		aUser <- randomUser
+		(Right (Just user)) <- local $ do
+			(Right (Just newUser)) <- C.createUser aUser
+			C.getCurrentUser
+		assertBool (show user) $ newUserUsername aUser == currentUserUsername user
 	it "returns 401 if unauthenticated" $ do
 		result <- local C.getCurrentUser
 		assertEqual (show result) (Right Nothing) result
 
 listUserGroups :: Spec
-listUserGroups = describe "GET /v1/users/:user/groups" $ do
+listUserGroups = describe "GET /users/:user/groups" $ do
 	it "returns all of the public groups that another user is in" $ do
 		pending "not implemented"
 	it "returns all groups that the authenticated user is in" $ do

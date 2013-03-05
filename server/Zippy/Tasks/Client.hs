@@ -26,11 +26,8 @@ getTask key = get ("/tasks/" <> htmlKey key) basicHandlers
 updateTask :: Key Task -> TaskChangeset -> ClientResult (Maybe (Entity Task))
 updateTask key = post ("/tasks/" <> htmlKey key) basicHandlers
 
-createUserList :: Key User -> NewList -> ClientResult (Maybe (Entity List))
-createUserList key = post ("/users/" <> htmlKey key <> "/lists") createdHandlers
-
-createGroupList :: Key Group -> NewList -> ClientResult (Maybe (Entity List))
-createGroupList key = post ("/groups/" <> htmlKey key <> "/lists") createdHandlers
+createList :: NewList -> ClientResult (Maybe (Entity List))
+createList = post ("/lists") createdHandlers
 
 updateList :: Key List -> ListChangeset -> ClientResult (Maybe (Entity List))
 updateList key = post ("/lists/" <> htmlKey key) basicHandlers

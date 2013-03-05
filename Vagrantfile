@@ -44,6 +44,18 @@ Vagrant::Config.run do |config|
     chef.cookbooks_path = "chef/cookbooks"
     chef.roles_path = "chef/roles"
     chef.data_bags_path = "chef/data_bags"
+    chef.json = {
+      :riak => {
+        :config => {
+          :riak_kv => {
+            :storage_backend => :riak_kv_eleveldb_backend
+          },
+          :riak_search => {
+            :enabled => true
+          }
+        }
+      }
+    }
     chef.add_recipe("apt")
     chef.add_recipe("riak")
     chef.add_recipe("redis::source")

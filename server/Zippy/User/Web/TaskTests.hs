@@ -45,7 +45,9 @@ nonexistantTask = Key "wombat"
 
 createTask = describe "POST /tasks" $ do
 	it "returns 400 when the task is invalid" $ pending ""
-	it "requires the user to be authenticated" $ pending ""
+	it "requires the user to be authenticated" $ do
+		result <- local $ C.createTask aTask
+		assertBool (show result) $ result == Right Nothing
 	it "returns the new task with appropriate key" $ do
 		aUser <- randomUser
 		result <- local $ do
@@ -57,22 +59,32 @@ getTask = describe "GET /tasks/:task" $ do
 	it "returns 404 when the task doesn't exist" $ do
 		result <- local $ C.getTask nonexistantTask
 		assertBool (show result) $ result == Right Nothing
-	it "returns the task if the user owns it" $ pending ""
+	it "returns the task if the user owns it" $ do
+		aUser <- randomUser
+		result <- local $ do
+			C.createUser aUser
+			(Right (Just e)) <- C.createTask aTask
+			C.getTask (rekey $ key e)
+		assertBool (show result) $ (not $ isLeft result) && (result /= Right Nothing)
 	it "returns the task if the user is in the group that owns it" $ pending ""
 	it "returns 404 when the user is not allowed to see it" $ pending ""
 
 updateTask = describe "POST /tasks/:task" $ do
-	it "returns 404 when the task doesn't exist" $ pending ""
+	it "returns 404 when the task doesn't exist" $ do
+		aUser <- randomUser
+		result <- local $ do
+			C.createUser aUser
+			C.updateTask nonexistantTask $ TaskChangeset (Just "whatever") Nothing Nothing
+		assertBool (show result) $ result == Right Nothing
 	it "returns 400 when the task cannot be deserialized" $ pending ""
 	it "does not allow updates if the user does not have permission" $ pending ""
 
 deleteTask = describe "DELETE /tasks/:task" $ do
-	it "returns 404 when the task doesn't exist" $ do
-		pending ""
-		--aUser <- randomUser
-		--result <- local $ do
-		--	(Right (Just user)) <- C.createUser aUser
-		--	C.deleteTask nonexistantTask
-		--assertBool (show result) $ result == Right Nothing
+	--it "returns 404 when the task doesn't exist" $ do
+	--	aUser <- randomUser
+	--	result <- local $ do
+	--		(Right (Just user)) <- C.createUser aUser
+	--		C.deleteTask nonexistantTask
+	--	assertBool (show result) $ result == Right Nothing
 	it "does not allow deletion if the user does not have permission" $ pending ""
 	it "does not return the task after deletion" $ pending ""

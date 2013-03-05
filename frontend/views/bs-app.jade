@@ -1,0 +1,513 @@
+doctype 5
+html(ng-app)
+  head
+    title Zippy
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css')
+    script(src='//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js')
+    script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js')
+    script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js')
+    script
+      var UserController = function($scope, $http ) {
+        $scope.user = { username: 'User' };
+        $http({method: 'GET', url: '/users/me'}).success(function (data) {
+          $scope.user = data;
+        });
+
+        $scope.users = [
+          { username: 'ian3000', name: "Ian Duncan" },
+          { username: 'phil', name: 'Phillip Stewart' }
+        ];
+      };
+
+      var TaskController = function($scope, $http) {
+        var emptyTask = function() {
+          return {
+            name: "",
+            description: "",
+            assignedTo: null
+          };
+        };
+
+        $scope.createTask = function() {
+          $http({method: 'POST', url: '/tasks', data: $scope.newTask}).success(function(data) {
+            $scope.tasks.push($scope.newTask);
+            $scope.newTask = emptyTask();
+          });
+        };
+
+        $scope.tasks = [];
+        $scope.newTask = emptyTask();
+      }
+
+      var ListController = function($scope, $http) {
+        var emptyList = function() { return { name: '' }; };
+        $scope.newList = emptyList();
+        $scope.lists = [];
+        $scope.createList = function() {
+          $http({method: 'POST', url: '/lists', data: $scope.newList}).success(function(data) {
+            $scope.lists.push(data);
+            $scope.newList = emptyList();
+          });
+        }
+      };
+
+      var GroupController = function($scope, $http) {
+        var emptyGroup = function() { return { name: '', members: [] }; };
+        $scope.newGroup = emptyGroup();
+        $scope.groups = [];
+        $scope.createGroup = function() {
+          $http({method: 'POST', url: '/groups', data: $scope.newGroup}).success(function(data) {
+            $scope.groups.push(data);
+            $scope.newGroup = emptyGroup();
+          });
+        };
+      };
+  body
+    .container-fluid(ng-controller='UserController')
+      .row-fluid(ng-controller='GroupController')
+        //- .span1.navbar
+        //-   .tasks.active: i.icon-check.icon-3x
+        //-   .mail: i.icon-envelope.icon-3x
+        //-   .calendar: i.icon-calendar.icon-3x
+        //-   .contacts: i.icon-user.icon-3x
+        //-   .wiki: i.icon-globe.icon-3x
+        //-   .chat: i.icon-comment.icon-3x
+        .span12(ng-controller='TaskController')
+          #createTaskModal.modal.hide.fade
+            .modal-header
+              button.close(type='button', data-dismiss='modal')&times;
+              h3 Create Task
+            .modal-body
+              form
+                label Name
+                input(type='text', ng-model='newTask.name')
+                label Description
+                input(type='text', ng-model='newTask.description')
+                label Assigned To
+                select(ng-model='newTask.assignedTo', ng-options='user.username as user.name for user in users')
+            .modal-footer
+              a.btn(href='#', data-dismiss='modal') Close
+              a.btn.btn-primary(href='#', data-dismiss='modal', ng-click='createTask()') Create Task
+
+          #createListModal.modal.hide.fade
+            .modal-header
+              button.close(type='button', data-dismiss='modal')&times;
+              h3 Create List
+            .modal-body
+              form
+                label Name
+                input(type='text', ng-model='newList.name')
+                //- label Description
+                //- input(type='text', ng-model='newList.description')
+                //- label Assigned To
+                //- select(ng-model='newList.assignedTo', ng-options='user.username as user.name for user in users')
+            .modal-footer
+              a.btn(href='#', data-dismiss='modal') Close
+              a.btn.btn-primary(href='#', data-dismiss='modal', ng-click='createList()') Create List
+
+          #createGroupModal.modal.hide.fade
+            .modal-header
+              button.close(type='button', data-dismiss='modal')&times;
+              h3 Create Group
+            .modal-body
+              form
+                label Name
+                input(type='text', ng-model='newGroup.name')
+                //- label Description
+                //- input(type='text', ng-model='newGroup.description')
+                //- label Assigned To
+                //- select(ng-model='newGroup.assignedTo', ng-options='user.username as user.name for user in users')
+            .modal-footer
+              a.btn(href='#', data-dismiss='modal') Close
+              a.btn.btn-primary(href='#', data-dismiss='modal', ng-click='createGroup()') Create Group
+
+          .app-container.container-fluid
+            .row-fluid
+              .span12.app-header
+                .navbar
+                  .navbar-inner
+                    a.brand(href='#') Projects
+                    ul.nav
+                      li.dropdown
+                        a.dropdown-toggle(href='#', data-toggle='dropdown') Task
+                        ul.dropdown-menu
+                          li: a(href='#createTaskModal', data-toggle='modal') New Task
+                          li: a(href='#') Mark as Complete
+                          li: a(href='#') Cancel
+                          li.divider
+                          li: a(href='#') Tag
+                          li: a(href='#') Assign to...
+                          li: a(href='#') Move to Another List
+                          li.dropdown-submenu
+                            a(href='#') Move
+                            ul.dropdown-menu
+                              li: a(href='#')
+                                | Up
+                                strong.pull-right w
+                              li: a(href='#') Up Five
+                              li: a(href='#') To Top
+                              li.divider
+                              li: a(href='#')
+                                | Down
+                                strong.pull-right s
+                              li: a(href='#') Down Five
+                              li: a(href='#') To Bottom
+                              li.divider
+                              li: a(href='#')
+                                | Left
+                                strong.pull-right a
+                              li: a(href='#')
+                                | Right
+                                strong.pull-right d
+                          li.divider
+                          li: a(href='#') Start Today
+                          li: a(href='#') Due Today
+                          li.dropdown-submenu
+                            a(href='#') Priority
+                            ul.dropdown-menu
+                              li: a(href='#')
+                                | 1
+                                strong.pull-right 1
+                              li: a(href='#')
+                                | 2
+                                strong.pull-right 2
+                              li: a(href='#')
+                                | 3
+                                strong.pull-right 3
+                              li: a(href='#')
+                                | 4
+                                strong.pull-right 4
+                              li: a(href='#')
+                                | 5
+                                strong.pull-right 5
+                              li: a(href='#')
+                                | 6
+                                strong.pull-right 6
+                              li: a(href='#')
+                                | 7
+                                strong.pull-right 7
+                              li: a(href='#')
+                                | 8
+                                strong.pull-right 8
+                              li: a(href='#')
+                                | 9
+                                strong.pull-right 9
+                              li: a(href='#')
+                                | None
+                                strong.pull-right 0
+                              li.divider
+                              li: a(href='#')
+                                | Raise Priority
+                                strong.pull-right ;
+                              li: a(href='#')
+                                | Lower Priority
+                                strong.pull-right '
+                          li.dropdown-submenu
+                            a(href='#') Estimated Time
+                            ul.dropdown-menu
+                              li: a(href='#') Add 1 Hour
+                              li: a(href='#') Add 30 Minutes
+                              li.divider
+                              li: a(href='#') Subtract 1 Hour
+                              li: a(href='#') Subtract 30 Minutes
+                          li.dropdown-submenu
+                            a(href='#') Due Date
+                            ul.dropdown-menu
+                              li: a(href='#') Add a Day
+                              li: a(href='#') Add a Week
+                              li.divider
+                              li: a(href='#') Subtract a Day
+                              li: a(href='#') Subtract a Week
+                          li.dropdown-submenu
+                            a(href='#') Start Date
+                            ul.dropdown-menu
+                              li: a(href='#') Add a Day
+                              li: a(href='#') Add a Week
+                              li.divider
+                              li: a(href='#') Subtract a Day
+                              li: a(href='#') Subtract a Week
+                          li: a(href='#') Repeat
+                      li.dropdown
+                        a(href='#', data-toggle='dropdown') Group
+                        ul.dropdown-menu
+                          li: a(href='#createGroupModal', data-toggle='modal') New Group
+                          li: a(href='#') Delete Group
+                      li.dropdown
+                        a.dropdown-toggle(href='#', data-toggle='dropdown') List
+                        ul.dropdown-menu
+                          li: a(href='#createListModal', data-toggle='modal') New List
+                          li: a(href='#') New Smart List
+                          li: a(href='#') Rename List
+                          li: a(href='#') Delete List
+                      li.dropdown
+                        a.dropdown-toggle(href='#', data-toggle='dropdown') View
+                        ul.dropdown-menu
+                          li: a(ng-click='filterBy("incomplete")') Show Incomplete
+                          li: a(ng-click='filterBy("all")') Show All
+                      li: a(href='#') Help
+                    .btn-group.pull-right
+                      a.btn.dropdown-toggle(href='#', data-toggle='dropdown') {{ user.name }} 
+                        span.caret
+                      ul.dropdown-menu
+                        li: a(href='#') Settings
+                        li: a(href='#') Sign Out
+            .row-fluid
+              .span4.app-sidebar
+                ul.nav.nav-list
+                  li.nav-header Smart Lists
+                  li: a(href='#')
+                    i.icon-list-alt
+                    |  Inbox
+                    span.pull-right.badge 5
+                  li: a(href='#')
+                    i.icon-list-alt
+                    |  Due Soon
+                    span.pull-right.badge 2
+                  li.nav-header Personal
+                  li(ng-repeat='list in lists'): a(href='#')
+                    i.icon-list-alt
+                    |  {{ list.name }}
+                    span.pull-right.badge 0
+                  li
+                    a(href='#')
+                      i.icon-folder-open
+                      |  Secret Project
+                    ul.nav.nav-list
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Task list for secret project
+                        span.pull-right.badge 0
+                  li.nav-header Groups
+                  li(ng-repeat='group in groups')
+                    i.icon-list-alt
+                    |  {{ group.name }}
+                  li
+                    a(href='#') Zippy
+                    ul.nav.nav-list
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Frontend
+                        span.pull-right.badge 0
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Backend
+                        span.pull-right.badge 10
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Support
+                        span.pull-right.badge 0
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Marketing
+                        span.pull-right.badge 0
+                  li
+                    a(href='#') Logos
+                    ul.nav.nav-list
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  OAuth
+                        span.pull-right.badge 0
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Community Services
+                        span.pull-right.badge 0
+                  li
+                    a(href='#') Home
+                    ul.nav.nav-list
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Errands
+                        span.pull-right.badge 0
+                      li: a(href='#')
+                        i.icon-list-alt
+                        |  Grocery List
+                        span.pull-right.badge 0
+              .span8.app
+                h2 Inbox
+                ul.unstyled
+                  li(ng-repeat='task in tasks')
+                    input(type='checkbox')
+                    |  {{ task.name }}
+                    .due-date.pull-right Tomorrow
+                    .due-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  custom icons
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //-   ul.sublist
+                  //-     li
+                  //-       input(type="checkbox")
+                  //-       |  subtask 1
+                  //-       .due-date.pull-right Tomorrow
+                  //-       .start-date.pull-right Today
+                  //-     li
+                  //-       input(type="checkbox")
+                  //-       |  subtask 2
+                  //-       .due-date.pull-right Tomorrow
+                  //-       .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  quick entry
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  keyboard shortcuts
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  file uploading
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  Email digests
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  Pricing
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  realtime syncing
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  custom workflows
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  graphs
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  something similar to jira query language
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  catch up on things a la basecamp
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  full history recording
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  newsfeed
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  post comments
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  location-aware tasks
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  recurring tasks
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  create user
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  analytics
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  cohort analysis
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  performance metrics
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  create project
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  smart lists
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  create task
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  edit task
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  edit project
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  org mode support
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  email integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  phone integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  desktop app
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  github integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  fogbugz integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  trello integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  calendar integration
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today
+                  //- li
+                  //-   input(type="checkbox")
+                  //-   |  recurring tasks
+                  //-   .due-date.pull-right Tomorrow
+                  //-   .start-date.pull-right Today

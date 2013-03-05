@@ -12,3 +12,4 @@ dist/
 /chef/cookbooks/riak/
 /chef/tmp/
 /chef/cookbooks/redis/
+/server/Zippy/Riak/riak_pb/

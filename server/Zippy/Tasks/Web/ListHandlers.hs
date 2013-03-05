@@ -17,10 +17,11 @@ createList :: Handler c ()
 createList = authenticate (status unauthorized401) $ \userId -> do
 	timestamp <- now
 	list <- jsonData
+	status created201
 	withData (L.createList $ initializeList timestamp userId list) (json . fmap asList)
 
 getList :: Handler c ()
-getList = do
+getList = authenticate (status unauthorized401) $ \userId -> do
 	listId <- param "list"
 	withData (L.getList $ Key listId) (json . fmap asList)
 
