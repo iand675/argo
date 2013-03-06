@@ -6,6 +6,7 @@ html(ng-app)
     script(src='//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js')
     script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js')
     script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js')
     script
       var UserController = function($scope, $http ) {
         $scope.user = { username: 'User' };
@@ -40,15 +41,39 @@ html(ng-app)
       }
 
       var ListController = function($scope, $http) {
-        var emptyList = function() { return { name: '' }; };
-        $scope.newList = emptyList();
-        $scope.lists = [];
+        var emptyList = function() { return {
+            name: '',
+            administrators: [],
+            group: null,
+            icon: null
+          };
+        };
+
+        $scope.setActiveList = function(key) {
+          $scope.activeListKey = key;
+          $scope.activeList = _.find($scope.lists, function(i) { return key === i._id; });
+        };
+
         $scope.createList = function() {
           $http({method: 'POST', url: '/lists', data: $scope.newList}).success(function(data) {
             $scope.lists.push(data);
             $scope.newList = emptyList();
           });
-        }
+        };
+        $scope.getUserLists = function(callback) {
+          $http({method: 'GET', url: '/users/me/lists'}).success(function(data) {
+            $scope.lists = data;
+            callback();
+          });
+        };
+
+        $scope.getUserLists(function() {
+          $scope.setActiveList($scope.lists[0] ? $scope.lists[0]._id : null);
+        });
+
+        $scope.newList = emptyList();
+        $scope.lists = [];
+        $scope.activeList = null;
       };
 
       var GroupController = function($scope, $http) {
@@ -64,7 +89,7 @@ html(ng-app)
       };
   body
     .container-fluid(ng-controller='UserController')
-      .row-fluid(ng-controller='GroupController')
+      .row-fluid(ng-controller='ListController')
         //- .span1.navbar
         //-   .tasks.active: i.icon-check.icon-3x
         //-   .mail: i.icon-envelope.icon-3x
@@ -89,7 +114,7 @@ html(ng-app)
               a.btn(href='#', data-dismiss='modal') Close
               a.btn.btn-primary(href='#', data-dismiss='modal', ng-click='createTask()') Create Task
 
-          #createListModal.modal.hide.fade
+          #createListModal.modal.hide.fade()
             .modal-header
               button.close(type='button', data-dismiss='modal')&times;
               h3 Create List
@@ -264,10 +289,10 @@ html(ng-app)
                     |  Due Soon
                     span.pull-right.badge 2
                   li.nav-header Personal
-                  li(ng-repeat='list in lists'): a(href='#')
+                  li(ng-repeat='list in lists'): a(ng-click='setActiveList(list._id)')
                     i.icon-list-alt
                     |  {{ list.name }}
-                    span.pull-right.badge 0
+                    span.pull-right.badge {{ list.tasks.length }}
                   li
                     a(href='#')
                       i.icon-folder-open
@@ -323,9 +348,9 @@ html(ng-app)
                         |  Grocery List
                         span.pull-right.badge 0
               .span8.app
-                h2 Inbox
+                h2 {{ activeList.name }}
                 ul.unstyled
-                  li(ng-repeat='task in tasks')
+                  li(ng-repeat='task in activeList.tasks')
                     input(type='checkbox')
                     |  {{ task.name }}
                     .due-date.pull-right Tomorrow

@@ -16,7 +16,7 @@ import Zippy.Riak.Simple
 import Zippy.Tasks.Data.Group hiding (User)
 import qualified Zippy.Tasks.Domain.Models as Domain
 import qualified Zippy.User.Domain.Models as Domain
-import Zippy.User.Data.User (User, user)
+import Zippy.User.Data.User (User, user, ownerIx, creatorIx)
 
 domainToData :: Domain.List -> List
 domainToData l = List
@@ -27,6 +27,7 @@ domainToData l = List
     , listGroup = fmap rekey $ Domain.listGroup l
     , listCreatedAt = Domain.listCreatedAt l
     , listIcon = Domain.listIcon l
+    , listTasks = Domain.listTasks l
     }
 
 instance Namespace List where
@@ -43,6 +44,7 @@ data List = List
     , listGroup :: Maybe (Key Group)
     , listCreatedAt :: UTCTime
     , listIcon :: Maybe Text
+    , listTasks :: [Key Domain.Task]
     }
 
 deriveJSON id ''List
@@ -51,6 +53,7 @@ instance O.AsContent List where
     fromContent = decode . C.value
     value = encode
     contentType = const O.jsonContent
+    indexes l = ownerIx (listOwner l) : creatorIx (listCreator l) : []
 
 instance DataRep Domain.List List where
     fromData l = Domain.List
@@ -61,6 +64,7 @@ instance DataRep Domain.List List where
         , Domain.listGroup = fmap rekey $ listGroup l
         , Domain.listCreatedAt = listCreatedAt l
         , Domain.listIcon = listIcon l
+        , Domain.listTasks = listTasks l
         }
 
 list :: Proxy List
@@ -79,7 +83,7 @@ getList k = riak $ do
 
 getGroupLists :: Key Domain.Group -> MultiDb [Entity Domain.List]
 getGroupLists k = do
-    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace group) $ fromKey k
+    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list "group" $ fromKey k
     case mkeys of
         Left err -> return $ Left err
         Right keys -> fmap (Right . rights) $ mapM getList keys
@@ -92,7 +96,7 @@ getGroupLists k = do
 
 getUserLists :: Key Domain.User -> MultiDb [Entity Domain.List]
 getUserLists k = do
-    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list (namespace user) $ fromKey k
+    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list "owner" $ fromKey k
     case mkeys of
         Left err -> return $ Left err
         Right keys -> fmap (Right . rights) $ mapM getList keys

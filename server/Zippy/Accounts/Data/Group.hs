@@ -23,10 +23,6 @@ domainToData g = Group
 	, active = Domain.groupActive g
 	}
 
-group :: Proxy Group
-group = Proxy
-
-data User
 
 instance Namespace User where
 	namespace = const "user"
@@ -39,13 +35,6 @@ ownerLink = link "owner"
 
 memberLink :: Key User -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
 memberLink = link "member"
-
-data Group = Group
-	{ name :: Text
-	, owner :: Key Domain.User
-	, members :: [Key Domain.User]
-	, active :: Bool
-	} deriving (Read, Show, Eq)
 
 deriveJSON id ''Group
 

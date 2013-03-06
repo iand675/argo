@@ -63,6 +63,7 @@ data List = List
     , listGroup          :: Maybe (Key Group)
     , listCreatedAt      :: UTCTime
     , listIcon           :: Maybe Text
+    , listTasks          :: [Key Task]
     }
 
 asList :: List -> Web.List
@@ -74,6 +75,7 @@ asList l = Web.List
     , Web.listGroup          = fmap rekey $ listGroup l
     , Web.listCreatedAt      = listCreatedAt l
     , Web.listIcon           = listIcon l
+    , Web.listTasks          = map rekey $ listTasks l
     }
 
 initializeList :: UTCTime -> Key User -> Web.NewList -> List
@@ -85,6 +87,7 @@ initializeList t u l = List
     , listGroup = fmap rekey $ Web.newListGroup l
     , listCreatedAt = t
     , listIcon = Web.newListIcon l
+    , listTasks = []
     }
 
 data Group = Group

@@ -25,11 +25,11 @@ keyProxy = const Proxy
 link :: Namespace a => ByteString -> Key a -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
 link rel k = (Just $ namespace $ keyProxy k, Just $ fromKey k, Just rel)
 
-index :: ByteString -> ByteString -> (ByteString, Maybe ByteString)
-index i v = (i, Just v)
+binIndex :: ByteString -> ByteString -> (ByteString, Maybe ByteString)
+binIndex i v = (i <> "_bin", Just v)
 
 keyIndex :: ByteString -> Key a -> (ByteString, Maybe ByteString)
-keyIndex i k = index i $ fromKey k
+keyIndex i k = binIndex i $ fromKey k
 
 rekey :: Key a -> Key b
 rekey = Key . fromKey

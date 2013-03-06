@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, EmptyDataDecls #-}
-module Zippy.User.Data.User where
+module Zippy.Accounts.Data.User where
 import Crypto.PasswordStore
 import qualified Data.ByteString as B
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -13,12 +13,6 @@ import Zippy.Riak.Simple
 import qualified Zippy.Riak.Object as O
 import qualified Zippy.Riak.Content as C
 
--- Break cyclic imports by creating an abstract reference type for memberships field
-data Group
-
-instance Namespace User where
-	namespace = const "user"
-
 user :: Proxy User
 user = Proxy
 
@@ -28,23 +22,14 @@ ownerLink = link "owner"
 memberLink :: Key User -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
 memberLink = link "member"
 
+ownerIx :: Key User -> (ByteString, Maybe ByteString)
+ownerIx = keyIndex "owner_bin"
+
 creatorIx :: Key User -> (ByteString, Maybe ByteString)
-creatorIx = keyIndex "creator"
+creatorIx = keyIndex "creator_bin"
 
 assignedToIx :: Key User -> (ByteString, Maybe ByteString)
-assignedToIx = keyIndex "assignedTo"
-
-data User = User
-	{ username         :: Text
-	, name             :: Text
-	, avatar           :: Maybe Text
-	, email            :: Text
-	, passwordHash     :: B.ByteString
-	, stripeCustomerId :: Maybe Text
-	, company          :: Maybe Text
-	, createdAt        :: UTCTime
-	, memberships      :: [Key Group]
-	} deriving (Read, Show, Eq)
+assignedToIx = keyIndex "assigned_to_bin"
 
 deriveJSON id ''User
 

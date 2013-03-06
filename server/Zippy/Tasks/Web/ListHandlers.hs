@@ -42,3 +42,4 @@ createListTask = raise "unimplemented"
 getUserLists :: Handler c ()
 getUserLists = authenticate (status unauthorized401) $ \userId -> do
 	withData (L.getUserLists userId) (json . map (fmap asList))
+

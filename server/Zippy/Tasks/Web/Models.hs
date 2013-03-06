@@ -11,14 +11,17 @@ data Sideload a = Reference { sideloadId :: Key a }
                 | Loaded { sideloadValue :: Entity a }
                 deriving (Read, Show, Eq)
 
+
 data NewTask = NewTask
     { newTaskName        :: Text
+    , newTaskList        :: Maybe (Key List)
     , newTaskDescription :: Maybe Text
     , newTaskAssignedTo  :: Maybe (Key User) -- Username
     } deriving (Read, Show, Eq)
 
 data TaskChangeset = TaskChangeset
     { taskChangesetName        :: Maybe Text
+    , taskChangesetList        :: Maybe (Key List)
     , taskChangesetDescription :: Maybe Text
     , taskChangesetAssignedTo  :: Maybe (Maybe (Key User))
     } deriving (Read, Show, Eq)
@@ -55,6 +58,7 @@ data List = List
     , listGroup          :: Maybe (Key Group)
     , listCreatedAt      :: UTCTime
     , listIcon           :: Maybe Text
+    , listTasks          :: [Key Task]
     } deriving (Read, Show, Eq)
 
 data NewGroup = NewGroup
