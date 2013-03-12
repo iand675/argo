@@ -4,8 +4,8 @@
     {
       "name": "Server",
       "path": "server",
-      "folder_exclude_patterns": ["dist", "Zippy/Calendar", "Zippy/Chat", "Zippy/Contacts", "Zippy/Mail", "Zippy/Wiki"],
-      "file_exclude_patterns": ["*~", "#*#", ".#*"]
+      "folder_exclude_patterns": ["content", "dist", "Zippy/Calendar", "Zippy/Chat", "Zippy/Contacts", "Zippy/Mail", "Zippy/Wiki", "Zippy/Riak/riak_pb"],
+      "file_exclude_patterns": ["*~", "#*#", ".#*", ".DS_Store"]
     },
     {
       "name": "Frontend",

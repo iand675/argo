@@ -1,85 +1,59 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses, EmptyDataDecls #-}
-module Zippy.Tasks.Data.Group where
+module Zippy.Accounts.Data.Group where
 import Control.Monad
+import Data.Aeson
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Either
 import Data.Proxy
 import Data.Time
+import Zippy.Accounts.Data.Relationships
+import Zippy.Accounts.Data.Types
+import Zippy.Accounts.Data.User
+import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common
 import Zippy.Base.Data
-import Zippy.Base.Model
 import qualified Zippy.Riak.Content as C
 import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
-import qualified Zippy.Tasks.Domain.Models as Domain
-import qualified Zippy.User.Domain.Models as Domain
-import qualified Zippy.User.Data.User as Data
-
-domainToData :: Domain.Group -> Group
-domainToData g = Group
-	{ name = Domain.groupName g
-	, owner = rekey $ Domain.groupOwner g
-	, members = map rekey $ Domain.groupMembers g
-	, active = Domain.groupActive g
-	}
-
-
-instance Namespace User where
-	namespace = const "user"
-
-instance Namespace Group where
-	namespace = const "group"
-
-ownerLink :: Key User -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
-ownerLink = link "owner"
-
-memberLink :: Key User -> (Maybe ByteString, Maybe ByteString, Maybe ByteString)
-memberLink = link "member"
-
-deriveJSON id ''Group
 
 instance O.AsContent Group where
 	fromContent = decode . C.value
 	value = encode
-	links u = (ownerLink $ rekey $ owner u) : map (memberLink . rekey) (members u)
+	links u = [ownerLink $ rekey $ groupOwner u]
 	contentType = const O.jsonContent
 
-instance DataRep Domain.Group Group where
-	fromData g = Domain.Group
-		{ Domain.groupName = name g
-		, Domain.groupOwner = rekey $ owner g
-		, Domain.groupMembers = map rekey $ members g
-		, Domain.groupActive = active g
-		}
-
-createGroup :: Domain.Group -> MultiDb (Key Domain.Group)
+createGroup :: Domain.Group -> MultiDb (Entity Domain.Group)
 createGroup g = riak $ do
-	pr <- putNew group () $ domainToData g
+	pr <- putNew group () $ toData g
 	return $ case C.key pr of
 		Nothing -> Left DataConflict
-		Just k -> Right $ Key k
+		Just k -> case C.putResponseVClock pr of
+			Nothing -> Left DeserializationError
+			Just e -> Right $ Entity (Key k) e g
 
 getGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
-getGroup k = riak $ do
-	gr <- get group () $ rekey k
-	return $ fmap (Entity k . fromData) $
-		(ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
+getGroup k = do
+	gr <- riak $ fmap Right $ get group () $ rekey k
+	rawGroup <- justOne $ C.getContent gr
+	group <- ifNothing DeserializationError $ O.fromContent rawGroup
+	e <- ifNothing DeserializationError $ C.getVClock gr
+	return $! Entity k e $ fromData group
 
 getUserGroups :: Key Domain.User -> MultiDb [Entity Domain.Group]
-getUserGroups k = do
-	mu <- Data.getUser $ rekey k
+getUserGroups k = undefined
+{-
+	mu <- getUser $ rekey k
 	case mu of
 		Left err -> return $ Left err
 		Right u -> do
-			mgs <- mapM (getGroup . rekey) $ Data.memberships u
+			mgs <- mapM (getGroup . rekey) $ undefined
 			return $! Right $ rights mgs
+-}
 
 updateGroup :: Key Domain.Group -> Domain.Group -> MultiDb (Entity Domain.Group)
 updateGroup = undefined
 
 archiveGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
 archiveGroup k = do
-	mg <- getGroup k
-	case mg of
-		l@(Left _) -> return l
-		Right g -> updateGroup k $ (value g) { Domain.groupActive = False }
+	g <- getGroup k
+	updateGroup k $ (value g) { Domain.groupActive = False }

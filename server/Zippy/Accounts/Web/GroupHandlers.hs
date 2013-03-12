@@ -1,13 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.Tasks.Web.GroupHandlers where
+module Zippy.Accounts.Web.GroupHandlers where
+import Data.Proxy
 import Network.HTTP.Types.Status
+import Zippy.Accounts.Domain.Mappers
+import Zippy.Accounts.Web.Types
+import Zippy.Accounts.Session
+import qualified Zippy.Accounts.Data.Group as G
 import Zippy.Base.Common
 import Zippy.Base.Web
-import Zippy.User.Session
-import Zippy.Tasks.Domain.Models
-import qualified Zippy.Tasks.Data.Group as G
 
-group = fmap Key $ param "group"
+groupKey = fmap Key $ param "group"
 
 listGroups :: Handler c ()
 listGroups = do
@@ -17,15 +19,16 @@ createGroup :: Handler c ()
 createGroup = authenticate (status unauthorized401) $ \userKey -> do
 	groupDto <- jsonData
 	let newGroup = initializeGroup userKey groupDto
-	withData (G.createGroup $ initializeGroup userKey groupDto) $ \g -> do
-		json $ Entity (rekey g) (asGroup newGroup)
+	withData (G.createGroup newGroup) $ \g -> do
+		json $ fmap (toModel group) g
 
 getGroup :: Handler c ()
 getGroup = authenticate (status unauthorized401) $ \userKey -> do
-	groupId <- group
-	withData (G.getGroup groupId) $ \g -> do
-		if userKey == (groupOwner $ value g) || (any (== userKey) $ groupMembers $ value g)
-			then json $ fmap asGroup g
+	groupId <- groupKey
+	withData (G.getGroup groupId) $ \dg -> do
+		let g = fmap (toModel group) dg
+		if userKey == (rekey $ groupOwner $ value g) || (any ((== userKey) . rekey) $ groupMembers $ value g)
+			then json g
 			else status notFound404
 
 updateGroup :: Handler c ()

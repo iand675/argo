@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.Tasks.Web.UserHandlers where
+module Zippy.Accounts.Web.UserHandlers where
 import Control.Monad.Trans
 import Data.Char
 import Data.Monoid
@@ -7,15 +7,16 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as L
 import Data.Time.Clock
 import Network.HTTP.Types.Status
+import qualified Zippy.Accounts.Data.Service as S
+import qualified Zippy.Accounts.Data.Group as S
+import qualified Zippy.Accounts.Data.Types as S
+import Zippy.Accounts.Domain.Types
+import Zippy.Accounts.Domain.Mappers
+import Zippy.Accounts.Session
+import Zippy.Accounts.Web.Types
 import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.Web
-import Zippy.User.Domain.Models
-import Zippy.User.Session
-import Zippy.User.Web.Models
-import qualified Zippy.Tasks.Domain.Models as M
-import qualified Zippy.Tasks.Data.Group as S
-import qualified Zippy.User.Data.Service as S
 
 validateUser, validateEmail, validateUserUsername, validatePassword, validateUserName :: NewUser -> Bool
 validateUser u = all ($ u) [validateEmail, validateUserUsername, validatePassword, validateUserName]
@@ -38,21 +39,21 @@ createUser = do
 		else withData (S.createUser newUser) $ \r -> do
 			status created201
 			header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (newUserUsername user) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
-			json $ asCurrentUser $ value r
+			json $ toModel currentUser $ value r
 
 getUser :: Handler c ()
 getUser = do
 	userId <- param "user"
-	withData (S.getUser $ Key userId) (json . asUser . value)
+	withData (S.getUser $ Key userId) (json . toModel user . value)
 
 getCurrentUser :: Handler c ()
 getCurrentUser = authenticate (status unauthorized401) $ \userId -> do
-	withData (S.getUser userId) (json . asCurrentUser . value)
+	withData (S.getUser userId) (json . toModel currentUser . value)
 
 listUserGroups :: Handler c ()
 listUserGroups = do
 	userId <- param "user"
-	withData (S.getUserGroups $ Key userId) (json . map (M.asGroup . value))
+	withData (S.getUserGroups $ Key userId) (json . map (toModel group . value))
 
 signIn :: Handler c ()
 signIn = do

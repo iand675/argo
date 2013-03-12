@@ -1,92 +1,52 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Tasks.Data.List where
 import Control.Monad
+import Data.Aeson
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Either
 import Data.Maybe
 import Data.Proxy
 import Data.Text (Text)
 import Data.Time.Clock
+import qualified Zippy.Accounts.Domain.Types as Domain
+import Zippy.Accounts.Data.Relationships (User, Group, user, ownerIx, creatorIx)
 import Zippy.Base.Common
 import Zippy.Base.Data
-import Zippy.Base.Model
 import qualified Zippy.Riak.Content as C
 import qualified Zippy.Riak.Object as O
 import Zippy.Riak.Simple
-import Zippy.Tasks.Data.Group hiding (User)
-import qualified Zippy.Tasks.Domain.Models as Domain
-import qualified Zippy.User.Domain.Models as Domain
-import Zippy.User.Data.User (User, user, ownerIx, creatorIx)
-
-domainToData :: Domain.List -> List
-domainToData l = List
-    { listName = Domain.listName l
-    , listOwner = rekey $ Domain.listOwner l
-    , listCreator = rekey $ Domain.listCreator l
-    , listAdministrators = map rekey $ Domain.listAdministrators l
-    , listGroup = fmap rekey $ Domain.listGroup l
-    , listCreatedAt = Domain.listCreatedAt l
-    , listIcon = Domain.listIcon l
-    , listTasks = Domain.listTasks l
-    }
-
-instance Namespace List where
-    namespace = const "list"
-
-listIx :: Key List -> (ByteString, Maybe ByteString)
-listIx = keyIndex "list"
-
-data List = List
-    { listName :: Text
-    , listOwner :: Key User
-    , listCreator :: Key User
-    , listAdministrators :: [Key User]
-    , listGroup :: Maybe (Key Group)
-    , listCreatedAt :: UTCTime
-    , listIcon :: Maybe Text
-    , listTasks :: [Key Domain.Task]
-    }
-
-deriveJSON id ''List
+import Zippy.Tasks.Data.Relationships
+import Zippy.Tasks.Data.Types
+import qualified Zippy.Tasks.Domain.Types as Domain
+import Zippy.Tasks.Domain.Mappers
 
 instance O.AsContent List where
     fromContent = decode . C.value
     value = encode
     contentType = const O.jsonContent
-    indexes l = ownerIx (listOwner l) : creatorIx (listCreator l) : []
-
-instance DataRep Domain.List List where
-    fromData l = Domain.List
-        { Domain.listName = listName l
-        , Domain.listOwner = rekey $ listOwner l
-        , Domain.listCreator = rekey $ listCreator l
-        , Domain.listAdministrators = map rekey $ listAdministrators l
-        , Domain.listGroup = fmap rekey $ listGroup l
-        , Domain.listCreatedAt = listCreatedAt l
-        , Domain.listIcon = listIcon l
-        , Domain.listTasks = listTasks l
-        }
-
-list :: Proxy List
-list = Proxy
+    indexes l = ownerIx (rekey $ listOwner l) : creatorIx (rekey $ listCreator l) : []
 
 createList :: Domain.List -> MultiDb (Entity Domain.List)
-createList l = riak $ do
-    pr <- putNew list () $ domainToData l
-    return $! fmap ((flip Entity $ l) . Key) $ ifNothing AlreadyExists $ C.key pr
+createList l = do
+    r <- riak $ fmap Right $ putNew list () $ toData l
+    k <- ifNothing AlreadyExists $ C.key r
+    e <- ifNothing DeserializationError $ C.putResponseVClock r
+    return $! Entity (Key k) e l
 
 getList :: Key Domain.List -> MultiDb (Entity Domain.List)
-getList k = riak $ do
-    gr <- get list () $ rekey k
-    return $! fmap result $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
-    where result = Entity k . fromData
+getList k = do
+    r <- riak $ fmap Right $ get list () $ rekey k
+    rawList <- justOne $ C.getContent r
+    list <- ifNothing DeserializationError $ O.fromContent rawList
+    e <- ifNothing DeserializationError $ C.getVClock r
+    return $! Entity k e $ fromData list
+    --return $! fmap result $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
+    --where result = Entity k . fromData
 
 getGroupLists :: Key Domain.Group -> MultiDb [Entity Domain.List]
 getGroupLists k = do
-    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list "group" $ fromKey k
-    case mkeys of
-        Left err -> return $ Left err
-        Right keys -> fmap (Right . rights) $ mapM getList keys
+    keys <- riak $ fmap Right $ indexEq list "group" $ fromKey k
+    mapM (getList . rekey) keys
 
 --do
     --keys <- indexEq list (namespace group) (fromKey k)
@@ -96,10 +56,8 @@ getGroupLists k = do
 
 getUserLists :: Key Domain.User -> MultiDb [Entity Domain.List]
 getUserLists k = do
-    mkeys <- riak $ fmap (Right . fmap rekey) $ indexEq list "owner" $ fromKey k
-    case mkeys of
-        Left err -> return $ Left err
-        Right keys -> fmap (Right . rights) $ mapM getList keys
+    keys <- riak $ fmap Right $ indexEq list "owner" $ fromKey k
+    mapM (getList . rekey) keys
     --do
     --keys <- indexEq list (namespace user) (fromKey k)
     --values <- mapM (get list ()) keys

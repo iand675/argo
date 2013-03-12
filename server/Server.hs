@@ -3,13 +3,13 @@ module Main where
 import Control.Monad.Trans
 import qualified Data.Text.Lazy.IO as T
 import Web.Scotty hiding (file, param, header, html)
+import Zippy.Accounts.Session
+import Zippy.Accounts.Web.GroupHandlers
+import Zippy.Accounts.Web.UserHandlers
 import Zippy.Base.Data (DbConfig, initialize, shutdown)
 import Zippy.Base.Web
-import Zippy.Tasks.Web.GroupHandlers
 import Zippy.Tasks.Web.ListHandlers
 import Zippy.Tasks.Web.TaskHandlers
-import Zippy.Tasks.Web.UserHandlers
-import Zippy.User.Session
 
 data Config = Config
 	{ dbConfig :: DbConfig

@@ -1,12 +1,10 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
-module Zippy.Base.Model (
+module Zippy.Base.JSON (
 	module Data.Aeson,
 	module Data.Aeson.TH,
 	(<>),
 	Text,
-	ErrorResponse(..),
 	stripPrefix,
-	Changeset(..),
 	jsonize
 ) where
 import Data.Aeson
@@ -23,12 +21,4 @@ stripPrefix i name = if i == 0
 		downcase [] = []
 		downcase (x:xs) = toLower x : xs
 
-jsonize i n = deriveJSON (stripPrefix i) n  
-
-class Changeset a b | a -> b where
-    apply :: a -> b -> Either Text a
-
-data ErrorResponse = UserError Text
-				   | DataError Text
-				   | WebError Text
-				   | OtherError Text
+jsonize i = deriveJSON (stripPrefix i)

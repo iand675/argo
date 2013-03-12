@@ -71,13 +71,13 @@ class AsContent a where
     value :: a -> ByteString
     value = const ""
 
-    links :: a -> [(Maybe Bucket, Maybe Key, Maybe Tag)]
+    links :: a -> [C.Link]
     links = const []
 
     metadata :: a -> [(ByteString, Maybe ByteString)]
     metadata = const []
 
-    indexes :: a -> [(ByteString, Maybe ByteString)]
+    indexes :: a -> [C.Index]
     indexes = const []
 
     characterSet :: a -> Maybe ByteString

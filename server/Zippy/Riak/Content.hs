@@ -16,11 +16,17 @@ encodeQuorum All       = 0xFFFFFFFC
 encodeQuorum Default   = 0xFFFFFFFB
 encodeQuorum (Count x) = fromIntegral x
 
+data Index = Index { indexBucket :: ByteString, indexValue :: ByteString }
+    deriving (Read, Show, Eq)
+
+data Link = Link { linkBucket :: ByteString, linkKey :: ByteString, linkTag :: Maybe ByteString }
+    deriving (Read, Show, Eq)
+
 data Content a = Content
     { value             :: ByteString
-    , links             :: [(Maybe ByteString, Maybe ByteString, Maybe ByteString)]
+    , links             :: [Link]
     , userMetadata      :: [(ByteString, Maybe ByteString)]
-    , indexes           :: [(ByteString, Maybe ByteString)]
+    , indexes           :: [Index]
     , characterSet      :: Maybe ByteString
     , contentType       :: Maybe ByteString
     , contentEncoding   :: Maybe ByteString

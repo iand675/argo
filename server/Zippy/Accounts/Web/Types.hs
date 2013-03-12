@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
-module Zippy.User.Web.Models where
-import Zippy.Base.Model
+module Zippy.Accounts.Web.Types where
+import qualified Zippy.Accounts.Domain.Types as Domain
+import Zippy.Base.Common
+import Zippy.Base.JSON
+import Data.Proxy
 
 data CurrentUser = CurrentUser
     { currentUserUsername     :: Text
@@ -34,13 +37,39 @@ data User = User
 data SignInRequest = SignInRequest
     { signInUsername :: Text
     , signInPassword :: Text
-    } deriving (Read)
+    } deriving (Read, Show, Eq)
 
-instance Changeset CurrentUser UserChangeset where
-    apply = undefined
+data NewGroup = NewGroup
+    { newGroupName    :: Text
+    , newGroupMembers :: Maybe [Key User]
+    } deriving (Read, Show, Eq)
+
+data GroupChangeset = GroupChangeset
+    { groupChangesetName  :: Maybe Text
+    , groupChangesetOwner :: Maybe (Key User)
+    } deriving (Read, Show, Eq)
+
+data Group = Group
+    { groupName    :: Text
+    , groupOwner   :: Key User
+    , groupMembers :: [Key User]
+    --, groupLists   :: [Sideload List]
+    } deriving (Read, Show, Eq)
 
 deriveJSON (stripPrefix 1) ''CurrentUser
 deriveJSON (stripPrefix 1) ''UserChangeset
 deriveJSON (stripPrefix 1) ''NewUser
 deriveJSON (stripPrefix 0) ''User
 deriveJSON (stripPrefix 2) ''SignInRequest
+deriveJSON (stripPrefix 1) ''NewGroup
+deriveJSON (stripPrefix 1) ''GroupChangeset
+deriveJSON (stripPrefix 0) ''Group
+
+user :: Proxy User
+user = Proxy
+
+currentUser :: Proxy CurrentUser
+currentUser = Proxy
+
+group :: Proxy Group
+group = Proxy

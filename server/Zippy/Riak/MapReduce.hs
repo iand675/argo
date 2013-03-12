@@ -133,11 +133,11 @@ arr = Array . fromList
 type KeyFilter = Filter String ()
 
 instance ToJSON a => ToJSON (Predicate a) where
-  toJSON (GreaterThan n)   = arr [String "less_than", toJSON n]
-  toJSON (LessThan n)      = arr [String "less_than", toJSON n]
-  toJSON (GreaterThanEq n) = arr [String "greater_than_eq", toJSON n]
-  toJSON (LessThanEq n)    = arr [String "less_than_eq", toJSON n]
-  toJSON (Between x y i)   = arr [String "between", toJSON x, toJSON y, toJSON i]
+    toJSON (GreaterThan n)   = arr [String "less_than", toJSON n]
+    toJSON (LessThan n)      = arr [String "less_than", toJSON n]
+    toJSON (GreaterThanEq n) = arr [String "greater_than_eq", toJSON n]
+    toJSON (LessThanEq n)    = arr [String "less_than_eq", toJSON n]
+    toJSON (Between x y i)   = arr [String "between", toJSON x, toJSON y, toJSON i]
 	toJSON (Matches str)     = arr [String "matches", toJSON str]
 	toJSON (NotEqual x)      = arr [String "neq", toJSON x]
 	toJSON (Equal x)         = arr [String "eq", toJSON x]

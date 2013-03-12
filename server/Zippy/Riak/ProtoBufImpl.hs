@@ -72,20 +72,30 @@ import           Zippy.Riak.Protocol.SetClientIDRequest           hiding (client
 class ToProtoRep a b | a -> b where
   toProtoRep :: a -> b
 
-class FromProtoRep a b | b -> a where
+class FromProtoRep a b | a -> b where
   fromProtoRep :: b -> a
 
-instance ToProtoRep (Maybe L.ByteString, Maybe L.ByteString, Maybe L.ByteString) L.Link where
-  toProtoRep (a, b, c) = L.Link a b c
+instance ToProtoRep C.Link L.Link where
+  toProtoRep (C.Link b k t) = L.Link (Just b) (Just k) t
 
-instance FromProtoRep (Maybe L.ByteString, Maybe L.ByteString, Maybe L.ByteString) L.Link where
-  fromProtoRep l = (L.bucket l, L.key l, L.tag l)
+instance FromProtoRep C.Link L.Link where
+  fromProtoRep l = C.Link b k (L.tag l)
+    where
+      unM f = maybe "" id $ f l
+      b = unM L.bucket
+      k = unM L.key
 
 instance ToProtoRep (L.ByteString, Maybe L.ByteString) P.Pair where
   toProtoRep (a, b) = P.Pair a b
 
 instance FromProtoRep (L.ByteString, Maybe L.ByteString) P.Pair where
   fromProtoRep (P.Pair a b) = (a, b)
+
+instance ToProtoRep C.Index P.Pair where
+  toProtoRep (C.Index i v) = P.Pair i (Just v)
+
+instance FromProtoRep C.Index P.Pair where
+  fromProtoRep (P.Pair i b) = C.Index i $ maybe "" id b
 
 instance ToProtoRep (C.Content a) Content where
   toProtoRep c = Content

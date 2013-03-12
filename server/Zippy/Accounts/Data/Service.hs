@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Data.Service where
+module Zippy.Accounts.Data.Service where
 import Data.Aeson
 import qualified Data.ByteString as S
 import Data.ByteString.Lazy (ByteString, toStrict, fromStrict)
@@ -8,37 +8,21 @@ import Data.Proxy
 import Data.Text (Text, pack)
 import Data.Text.Encoding
 import Database.Redis hiding (decode)
+import Zippy.Accounts.Data.Types
+import qualified Zippy.Accounts.Data.User as Raw
+import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common
 import Zippy.Base.Data
-import qualified Zippy.User.Data.User as Raw
-import qualified Zippy.User.Domain.Models as Domain
 
-domainToData :: Domain.User -> Raw.User
-domainToData u = Raw.User
-    { Raw.username         = Domain.userUsername u
-    , Raw.name             = Domain.userName u
-    , Raw.avatar           = Domain.userAvatar u
-    , Raw.email            = Domain.userEmail u
-    , Raw.passwordHash     = Domain.userPasswordHash u
-    , Raw.stripeCustomerId = Domain.userStripeCustomerId u
-    , Raw.company          = Domain.userCompany u
-    , Raw.createdAt        = Domain.userCreatedAt u
-    , Raw.memberships      = []
-    }
 
-entitize :: a -> Key b -> Entity a
-entitize x k = Entity (rekey k) x
+entitize :: a -> Key b -> ByteString -> Entity a
+entitize x k e = Entity (rekey k) e x
 
 createUser :: Domain.User -> MultiDb (Entity Domain.User)
-createUser u = fmap combine $ Raw.createUser $ domainToData u
-    where combine = fmap (entitize u)
+createUser = fmap (fmap fromData) . Raw.createUser . toData
 
 getUser :: Key Domain.User -> MultiDb (Entity Domain.User)
-getUser u = fmap combine $ Raw.getUser rawKey
-    where
-        combine = fmap (Entity u . fromData)
-        rawKey :: Key Raw.User
-        rawKey = rekey u
+getUser = fmap (fmap fromData) . Raw.getUser . rekey
 
 signIn :: Text -> Text -> MultiDb (Maybe Text)
 signIn = Raw.signIn

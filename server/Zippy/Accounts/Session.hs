@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Session where
+module Zippy.Accounts.Session where
 import Zippy.Base.Common
 import Zippy.Base.Web
-import Zippy.User.Domain.Models
+import Zippy.Accounts.Domain.Types
 
 currentUserId :: Handler c (Maybe (Key User))
 currentUserId = fmap (fmap toKey . lookup "ZippyAuth") cookies
