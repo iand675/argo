@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses #-}
-module Database.Riak.Protocol.ServerInfo (ServerInfo(..)) where
+module Zippy.Riak.Protocol.ServerInfo (ServerInfo(..)) where
 import Prelude ((+), (/))
 import qualified Prelude as Prelude'
 import qualified Data.Typeable as Prelude'

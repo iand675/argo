@@ -31,7 +31,6 @@ import           Control.Applicative
 import           Control.Exception
 import           Control.Monad.Operational
 import           Control.Monad.Reader
-import           Control.Monad.Trans
 import qualified Data.ByteString.Lazy.Char8                       as L
 import qualified Data.Foldable                                    as F
 import qualified Data.Sequence                                    as S
@@ -42,10 +41,8 @@ import qualified Zippy.Riak.Messages                              as M
 import qualified Zippy.Riak.Types                                 as M
 import qualified Zippy.Riak.Content                               as C
 import qualified Zippy.Riak.Object                                as O
-import           Zippy.Riak.Protocol.BucketProps
 import           Zippy.Riak.Protocol.Content
 import           Zippy.Riak.Protocol.DeleteRequest                as D
-import           Zippy.Riak.Protocol.ErrorResponse
 import           Zippy.Riak.Protocol.GetBucketRequest
 import           Zippy.Riak.Protocol.GetBucketResponse
 import           Zippy.Riak.Protocol.GetClientIDResponse
@@ -144,7 +141,7 @@ instance ToProtoRep C.GetRequest GR.GetRequest where
 instance FromProtoRep (C.GetResponse a) (Tagged a GR.GetResponse) where
 -- toProtoRep c = undefined
   fromProtoRep c = C.GetResponse
-                   { C.getContent = map (fromProtoRep . (\c -> Tagged c :: Tagged a Content)) $ F.toList $ GR.content $ unTagged c
+                   { C.getContent = map (fromProtoRep . (\x -> Tagged x :: Tagged a Content)) $ F.toList $ GR.content $ unTagged c
                    , C.getVClock = GR.vclock $ unTagged c
                    , C.unchanged = GR.unchanged $ unTagged c
                    }
@@ -166,7 +163,7 @@ instance ToProtoRep (C.PutRequest a) PR.PutRequest where
 
 instance FromProtoRep (C.PutResponse a) (Tagged a PS.PutResponse) where
   fromProtoRep c = C.PutResponse
-                   { C.putResponseContent = map (fromProtoRep . (\c -> Tagged c :: Tagged a Content)) $ F.toList $ PS.content $ unTagged c
+                   { C.putResponseContent = map (fromProtoRep . (\x -> Tagged x :: Tagged a Content)) $ F.toList $ PS.content $ unTagged c
                    , C.putResponseVClock = PS.vclock $ unTagged c
                    , C.key = PS.key $ unTagged c
                    }
@@ -185,7 +182,7 @@ instance ToProtoRep C.DeleteRequest D.DeleteRequest where
                  }
 
 mapIndexRequest :: O.Bucket -> O.Index -> O.IndexQuery -> IR.IndexRequest
-mapIndexRequest b i q = IndexRequest
+mapIndexRequest b i queryData = IndexRequest
                         { IR.bucket = b
                         , IR.index = i'
                         , IR.qtype = qt
@@ -194,7 +191,7 @@ mapIndexRequest b i q = IndexRequest
                         , IR.rangeMax = maxRange
                         }
   where
-    (i', qt, k, minRange, maxRange) = case q of
+    (i', qt, k, minRange, maxRange) = case queryData of
       O.StringQuery (O.Key k) -> (L.append i "_bin", IQ.Eq, Just k, Nothing, Nothing)
       O.StringQuery (O.Range low high) -> (L.append i "_bin", IQ.Range, Nothing, Just low, Just high)
       O.IntQuery (O.Key k) -> (L.append i "_int", IQ.Eq, Just undefined, Nothing, Nothing)
@@ -268,7 +265,7 @@ listBuckets = do
     M.ListBuckets resp -> return $! F.toList $ buckets resp
     _ -> throw $ M.UnexpectedResponse resp
 
-listKeys :: L.ByteString -> Riak [M.Key]
+listKeys :: L.ByteString -> Riak [L.ByteString]
 listKeys req = do
   resp <- run $ M.listKeys $ ListKeysRequest req
   case resp of
@@ -296,7 +293,7 @@ mapReduce req = do
     M.MapReduce resps -> return resps
     _ -> throw $ M.UnexpectedResponse resp
 
-indexQuery :: IndexRequest -> Riak [M.Key]
+indexQuery :: IndexRequest -> Riak [L.ByteString]
 indexQuery req = do
   resp <- run $ M.index req
   case resp of

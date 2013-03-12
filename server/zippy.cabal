@@ -45,8 +45,7 @@ executable Server
     main-is: Server.hs
     other-modules:      Zippy.Base.Common,
                         Zippy.Base.Data,
-                        Zippy.Base.Domain,
-                        Zippy.Base.Model,
+                        Zippy.Base.JSON,
                         Zippy.Base.Web,
                         Zippy.Riak.Connection,
                         Zippy.Riak.Content,
@@ -86,28 +85,29 @@ executable Server
                         Zippy.Riak.Protocol.SetClientIDRequest,
                         Zippy.Riak.Simple,
                         Zippy.Riak.Types,
-                        Zippy.Tasks.Data.Group,
                         Zippy.Tasks.Data.List,
                         Zippy.Tasks.Data.Service,
                         Zippy.Tasks.Data.Task,
-                        Zippy.Tasks.Domain.Models,
-                        Zippy.Tasks.Web.GroupHandlers,
+                        Zippy.Tasks.Domain.Types,
                         Zippy.Tasks.Web.ListHandlers,
-                        Zippy.Tasks.Web.Models,
+                        Zippy.Tasks.Web.Types,
                         Zippy.Tasks.Web.TaskHandlers,
-                        Zippy.Tasks.Web.UserHandlers,
                         Zippy.Tasks.Client,
-                        Zippy.User.Data.Service,
-                        Zippy.User.Data.User,
-                        Zippy.User.Domain.Models,
-                        Zippy.User.Web.Models,
-                        Zippy.User.Client,
-                        Zippy.User.Session
+                        Zippy.Accounts.Data.Group,
+                        Zippy.Accounts.Data.Service,
+                        Zippy.Accounts.Data.User,
+                        Zippy.Accounts.Domain.Mappers,
+                        Zippy.Accounts.Domain.Types,
+                        Zippy.Accounts.Web.Types,
+                        Zippy.Accounts.Web.UserHandlers,
+                        Zippy.Accounts.Web.GroupHandlers,
+                        Zippy.Accounts.Client,
+                        Zippy.Accounts.Session
 
     -- Other library packages from which modules are imported.
     build-depends:      base ==4.6.*,
                         mtl ==2.1.*,
-                        resourcet ==0.4.*,
+                        resourcet,
                         aeson ==0.6.*,
                         bytestring ==0.10.*,
                         containers ==0.5.*,
@@ -128,7 +128,10 @@ executable Server
                         resource-pool,
                         unordered-containers,
                         base64-bytestring,
-                        cryptohash
+                        cryptohash,
+                        either,
+                        pwstore-fast
+    ghc-options: -Wall -Werror -O2
 
 test-suite WebTest
      type: exitcode-stdio-1.0
@@ -148,7 +151,6 @@ test-suite WebTest
                      cookie,
                      wai,
                      time,
-                     hedis,
                      tagged,
                      unordered-containers
      other-modules:  Zippy.Base.Client

@@ -3,7 +3,6 @@
 module Zippy.Riak.Messages where
 import Control.Applicative
 import Control.Exception
-import Data.Aeson (encode)
 import Data.Attoparsec.Binary
 import qualified Data.Attoparsec as P
 import Data.ByteString (ByteString)
@@ -16,8 +15,6 @@ import Data.Word
 import Text.ProtocolBuffers.Reflections
 import Text.ProtocolBuffers.WireMessage hiding (Get, Put)
 
-import Zippy.Riak.Protocol.BucketProps
-import Zippy.Riak.Protocol.Content
 import Zippy.Riak.Protocol.DeleteRequest
 import Zippy.Riak.Protocol.ErrorResponse
 import Zippy.Riak.Protocol.GetBucketRequest
@@ -90,7 +87,7 @@ handleRemaining :: B.ByteString -> (B.ByteString -> P.Result Response) -> Either
 handleRemaining bs f = case f bs of
   P.Fail _ _ e -> throw $ ProtocolError e
   P.Partial f' -> Left f'
-  P.Done r msg -> Right (msg, r)
+  P.Done rest msg -> Right (msg, rest)
 
 parseResponse :: P.Parser Response
 parseResponse = do
@@ -125,6 +122,7 @@ parseResponse = do
     0x1C -> (SearchQuery . protoGet) <$> pbs
     responseCode -> throw $ ProtocolError $ "Unrecognized response type: " ++ show responseCode
 
+parseKeyList :: ([LK.ListKeysResponse] -> [LK.ListKeysResponse]) -> P.Parser Response
 parseKeyList f = do
   len <- anyWord32be
   code <- P.anyWord8
@@ -135,6 +133,7 @@ parseKeyList f = do
       else parseKeyList $ f . (next :)
     _ -> throw $ ProtocolError "Unexpected response while parsing key list."
 
+parseMapReduceResults :: ([MR.MapReduceResponse] -> [MR.MapReduceResponse]) -> P.Parser Response
 parseMapReduceResults f = do
   len <- anyWord32be
   code <- P.anyWord8

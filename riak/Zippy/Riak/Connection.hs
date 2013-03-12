@@ -11,17 +11,17 @@ module Zippy.Riak.Connection (
   decodeRecv
 ) where
 import qualified Network.Socket as S
+import Data.Attoparsec (Result)
 import Data.IORef
 import Data.Maybe
 import Data.Pool
 import Data.Time.Clock
 import Zippy.Riak.Types
-import Zippy.Riak.Messages (getResponse, handleRemaining)
+import Zippy.Riak.Messages (getResponse, handleRemaining, Response)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.Builder
 import Network.Socket.ByteString
-import Text.ProtocolBuffers.Get
 
 data ConnectionSettings = ConnectionSettings
   { host               :: Maybe String
@@ -60,6 +60,7 @@ connect h p = do
   left <- newIORef B.empty
   return $! Connection s left
 
+disconnect :: Connection -> IO ()
 disconnect = S.close . connSocket
 
 instance RiakConnection Connection where
@@ -68,12 +69,15 @@ instance RiakConnection Connection where
 instance RiakConnection RiakConnectionPool where
   withConnection p = withResource (fromRiakConnectionPool p)
 
+runRequest :: Request -> Connection -> IO Response
 runRequest b c = do
   sendRequest c b
   decodeRecv c
 
+decodeRecv :: Connection -> IO Response
 decodeRecv c = decodeRecv' c getResponse
 
+decodeRecv' :: Connection -> (B.ByteString -> Result Response) -> IO Response
 decodeRecv' c f = do
   bs <- recv (connSocket c) window
   let response = handleRemaining bs f
@@ -85,5 +89,5 @@ decodeRecv' c f = do
   where
     window = 16384
 
-
+sendRequest :: Connection -> Request -> IO ()
 sendRequest c r = sendMany (connSocket c) $ L.toChunks $ toLazyByteString $ fromRequest r

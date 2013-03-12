@@ -4,8 +4,12 @@ import Data.Aeson
 import Data.Aeson.Types
 import Data.ByteString.Lazy (ByteString)
 import Data.Set (Set, toList)
+import Data.Tagged
 import Data.Text (Text)
 import Data.Vector (fromList)
+import Zippy.Riak.Types
+
+type UntypedKey = ByteString
 
 data Function = Erlang ErlangQuery
               | Javascript JavascriptQuery
@@ -14,31 +18,31 @@ data ErlangQuery = ErlangQuery { erlangModule :: ByteString
                                , function :: ByteString }
 
 data JavascriptQuery = SourceQuery ByteString
-                     | Stored BucketName Key
+                     | forall a. Stored (Bucket a) (Key a)
                      | BuiltIn ByteString
 
-data Inputs a = Index { ixBucket :: Maybe BucketName
+data Inputs a = Index { ixBucket :: Maybe (Bucket a)
                       , index    :: Maybe (IndexName a)
                       , ixStart  :: Maybe ByteString
                       , ixEnd    :: Maybe ByteString
-                      , ixKey    :: Maybe Key
+                      , ixKey    :: Maybe (Key a)
                       }
-            | KeyFilter { keyFilterBucket :: BucketName
+            | KeyFilter { keyFilterBucket :: Bucket a
                         , keyFilter :: KeyFilter
                         }
-            | Inputs { inputs :: [(BucketName, Key, Maybe ByteString)] }
+            | Inputs { inputs :: [(Bucket a, Key a, Maybe ByteString)] }
 
 instance ToJSON (Inputs a) where
-	toJSON (Index bucket index start end key) = object [ "bucket" .= fmap fromBucketName bucket, "index" .= fmap fromIndexName index, "key" .= fmap fromKey key, "start" .= start, "end" .= end ]
-	toJSON (KeyFilter bucket filter) = object [ "bucket" .= fromBucketName bucket, "key_filters" .= filter ]
+	toJSON (Index bucket index start end key) = object [ "bucket" .= fmap unTagged bucket, "index" .= index, "key" .= fmap unTagged key, "start" .= start, "end" .= end ]
+	toJSON (KeyFilter bucket filter) = object [ "bucket" .= unTagged bucket, "key_filters" .= filter ]
 	toJSON (Inputs inputs) = toJSON $ map detuple inputs
 		where
-			detuple (b, k, Nothing) = [toJSON $ fromBucketName b, toJSON $ fromKey k]
-			detuple (b, k, Just d)  = [toJSON $ fromBucketName b, toJSON $ fromKey k, toJSON d]
+			detuple (b, k, Nothing) = [toJSON $ unTagged b, toJSON $ unTagged k]
+			detuple (b, k, Just d)  = [toJSON $ unTagged b, toJSON $ unTagged k, toJSON d]
 
 simpleInputs :: [(ByteString, ByteString)] -> Inputs ix
 simpleInputs = Inputs . map toInput
-	where toInput (b, k) = (BucketName b, Key k, Nothing)
+	where toInput (b, k) = (Tagged b, Tagged k, Nothing)
 
 sourceType :: Function -> Value
 sourceType (Erlang _) = String "erlang"
@@ -73,7 +77,7 @@ sourcePairs (Erlang f) = case f of
   ErlangQuery m f -> [ "module" .= m, "function" .= f ]
 sourcePairs (Javascript f) = case f of
   SourceQuery s -> [ "source" .= s ]
-  Stored b k -> [ "bucket" .= fromBucketName b, "key" .= fromKey k ]
+  Stored b k -> [ "bucket" .= unTagged b, "key" .= unTagged k ]
   BuiltIn n -> [ "name" .= n ]
 
 instance ToJSON Phase where
@@ -90,18 +94,18 @@ instance ToJSON Phase where
 infixr 9 $>
 
 data Transform from to where
-	IntToString :: Transform Int String
-	StringToInt :: Transform String Int
-	FloatToString :: Transform Double String
-	StringToFloat :: Transform String Double
-	ToUpper :: Transform String String
-	ToLower :: Transform String String
-	Tokenize :: String -> Int -> Transform String String
-	UrlDecode :: Transform String String
+	IntToText :: Transform Int Text
+	TextToInt :: Transform Text Int
+	FloatToText :: Transform Double Text
+	TextToFloat :: Transform Text Double
+	ToUpper :: Transform Text Text
+	ToLower :: Transform Text Text
+	Tokenize :: Text -> Int -> Transform Text Text
+	UrlDecode :: Transform Text Text
 
 newtype Filter a b = Filter { fromFilter :: [Value] }
 
-finalizeFilter :: Filter String a -> Filter String ()
+finalizeFilter :: Filter Text a -> Filter Text ()
 finalizeFilter = Filter . fromFilter
 
 ($>) :: (ToJSON a, ToJSON b, ToJSON c) => Transform a b -> Filter b c -> Filter a c
@@ -111,33 +115,33 @@ predicate :: ToJSON a => Predicate a -> Filter a ()
 predicate p = (Filter $ (:[]) $ toJSON p) :: Filter a b
 
 data Predicate a where
-	GreaterThan :: Num a => a -> Predicate b
-	LessThan :: Num b => b -> Predicate b
-	GreaterThanEq :: Num b => b -> Predicate b
-	LessThanEq :: Num b => b -> Predicate b
-	Between :: Num b => b -> b -> Bool -> Predicate b
-	Matches :: String -> Predicate String
-	NotEqual :: b -> Predicate b
-	Equal :: b -> Predicate b
-	SetMember :: Set b -> Predicate b
-	SimilarTo :: String -> Int -> Predicate String
-	StartsWith :: String -> Predicate String
-	EndsWith :: String -> Predicate String
-	And :: Filter a () -> Filter a () -> Predicate a
-	Or :: Filter a () -> Filter a () -> Predicate a
-	Not :: Predicate a -> Predicate a
+	GreaterThan :: (ToJSON a, Num a) => a -> Predicate b
+	LessThan :: (ToJSON b, Num b) => b -> Predicate b
+	GreaterThanEq :: (ToJSON b, Num b) => b -> Predicate b
+	LessThanEq :: (ToJSON b, Num b) => b -> Predicate b
+	Between :: (ToJSON b, Num b) => b -> b -> Bool -> Predicate b
+	Matches :: Text -> Predicate Text
+	NotEqual :: (ToJSON b) => b -> Predicate b
+	Equal :: (ToJSON b) => b -> Predicate b
+	SetMember :: (ToJSON b) => Set b -> Predicate b
+	SimilarTo :: Text -> Int -> Predicate Text
+	StartsWith :: Text -> Predicate Text
+	EndsWith :: Text -> Predicate Text
+	And :: (ToJSON a) => Filter a () -> Filter a () -> Predicate a
+	Or :: (ToJSON a) => Filter a () -> Filter a () -> Predicate a
+	Not :: (ToJSON a) => Predicate a -> Predicate a
 
 arr :: [Value] -> Value
 arr = Array . fromList
 
-type KeyFilter = Filter String ()
+type KeyFilter = Filter Text ()
 
 instance ToJSON a => ToJSON (Predicate a) where
-    toJSON (GreaterThan n)   = arr [String "less_than", toJSON n]
-    toJSON (LessThan n)      = arr [String "less_than", toJSON n]
-    toJSON (GreaterThanEq n) = arr [String "greater_than_eq", toJSON n]
-    toJSON (LessThanEq n)    = arr [String "less_than_eq", toJSON n]
-    toJSON (Between x y i)   = arr [String "between", toJSON x, toJSON y, toJSON i]
+	toJSON (GreaterThan n)   = arr [String "less_than", toJSON n]
+	toJSON (LessThan n)      = arr [String "less_than", toJSON n]
+	toJSON (GreaterThanEq n) = arr [String "greater_than_eq", toJSON n]
+	toJSON (LessThanEq n)    = arr [String "less_than_eq", toJSON n]
+	toJSON (Between x y i)   = arr [String "between", toJSON x, toJSON y, toJSON i]
 	toJSON (Matches str)     = arr [String "matches", toJSON str]
 	toJSON (NotEqual x)      = arr [String "neq", toJSON x]
 	toJSON (Equal x)         = arr [String "eq", toJSON x]
@@ -150,10 +154,10 @@ instance ToJSON a => ToJSON (Predicate a) where
 	toJSON (Not t)           = arr [String "not", toJSON t]
 
 instance (ToJSON a, ToJSON b) => ToJSON (Transform a b) where
-	toJSON IntToString      = arr [String "int_to_string"]
-	toJSON StringToInt      = arr [String "string_to_int"]
-	toJSON FloatToString    = arr [String "float_to_string"]
-	toJSON StringToFloat    = arr [String "string_to_float"]
+	toJSON IntToText        = arr [String "int_to_string"]
+	toJSON TextToInt        = arr [String "string_to_int"]
+	toJSON FloatToText      = arr [String "float_to_string"]
+	toJSON TextToFloat      = arr [String "string_to_float"]
 	toJSON ToUpper          = arr [String "to_upper"]
 	toJSON ToLower          = arr [String "to_lower"]
 	toJSON (Tokenize str i) = arr [String "tokenize", toJSON str, toJSON i]
