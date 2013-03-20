@@ -21,9 +21,7 @@ createGroup g = riak $ do
 	pr <- putNew group () $ toData g
 	return $ case C.key pr of
 		Nothing -> Left DataConflict
-		Just k -> case C.putResponseVClock pr of
-			Nothing -> Left DeserializationError
-			Just e -> Right $ Entity (Key k) e g
+		Just k -> Right $ Entity (Key k) "" g
 
 getGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
 getGroup k = do
@@ -34,7 +32,7 @@ getGroup k = do
 	return $! Entity k e $ fromData dbGroup
 
 getUserGroups :: Key Domain.User -> MultiDb [Entity Domain.Group]
-getUserGroups _ = undefined
+getUserGroups _ = return []
 {-
 	mu <- getUser $ rekey k
 	case mu of

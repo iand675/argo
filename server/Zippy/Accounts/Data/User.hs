@@ -29,9 +29,7 @@ createUser u = riak $ do
 	case C.getContent gr of
 		[] -> do
 			pr <- put user (O.withVClockFrom gr) k u
-			case C.putResponseVClock pr of
-				Nothing -> return $ Left DeserializationError
-				Just e -> return $ Right $ Entity (rekey k) e u
+			return $ Right $ Entity (rekey k) "" u
 		_ -> return $ Left AlreadyExists
 
 getUser :: Key User -> MultiDb (Entity User)

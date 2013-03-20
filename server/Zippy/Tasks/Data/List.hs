@@ -22,16 +22,14 @@ createList :: Domain.List -> MultiDb (Entity Domain.List)
 createList l = do
     r <- riak $ fmap Right $ putNew list () $ toData l
     k <- ifNothing AlreadyExists $ C.key r
-    e <- ifNothing DeserializationError $ C.putResponseVClock r
-    return $! Entity (Key k) e l
+    return $! Entity (Key k) "" l
 
 getList :: Key Domain.List -> MultiDb (Entity Domain.List)
 getList k = do
     r <- riak $ fmap Right $ get list () $ rekey k
     rawList <- justOne $ C.getContent r
     dbList <- ifNothing DeserializationError $ O.fromContent rawList
-    e <- ifNothing DeserializationError $ C.getVClock r
-    return $! Entity k e $ fromData dbList
+    return $! Entity k "" $ fromData dbList
     --return $! fmap result $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
     --where result = Entity k . fromData
 

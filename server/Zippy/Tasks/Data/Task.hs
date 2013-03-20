@@ -19,16 +19,14 @@ createTask :: Domain.Task -> MultiDb (Entity Domain.Task)
 createTask t = do
     newTask <- riak $ fmap Right $ putNew task () $ toData t
     k <- ifNothing AlreadyExists $ C.key newTask
-    e <- ifNothing DeserializationError $ C.putResponseVClock newTask
-    return $! Entity (Key k) e t
+    return $! Entity (Key k) "" t
 
 getTask :: Key Domain.Task -> MultiDb (Entity Domain.Task)
 getTask k = do
     c <- riak $ fmap Right $ get task () $ rekey (rekey k :: Key Task)
     aContent <- justOne $ C.getContent c
     rawTask <- ifNothing DeserializationError $ O.fromContent aContent
-    e <- ifNothing DeserializationError $ C.getVClock c
-    return $! Entity k e $ fromData rawTask
+    return $! Entity k "" $ fromData rawTask
 
 getListTasks :: Key Domain.List -> MultiDb [Entity Domain.Task]
 getListTasks _ = undefined 

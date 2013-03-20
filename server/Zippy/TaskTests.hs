@@ -29,6 +29,7 @@ randomUser = do
 
 aTask = NewTask
 	{ newTaskName = "Test Task"
+	, newTaskList = Nothing
 	, newTaskDescription = Just "Test Description"
 	, newTaskAssignedTo = Nothing
 	}
