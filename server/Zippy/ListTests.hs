@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Web.ListTests where
+module Zippy.ListTests where
 import Control.Monad.Trans
 import qualified Data.Text as T
 import System.Random
@@ -8,9 +8,9 @@ import Test.QuickCheck
 import Test.HUnit
 import Zippy.Base.Client
 import Zippy.Base.Common
-import Zippy.Tasks.Web.Models
-import Zippy.User.Web.Models
-import qualified Zippy.User.Client as C
+import Zippy.Accounts.Web.Types
+import Zippy.Tasks.Web.Types
+import qualified Zippy.Accounts.Client as C
 import qualified Zippy.Tasks.Client as C
 
 local = runClient "http://127.0.0.1:3000"

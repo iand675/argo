@@ -1,11 +1,11 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, ScopedTypeVariables, OverloadedStrings, MultiParamTypeClasses, FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, ScopedTypeVariables, OverloadedStrings, MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances #-}
 module Zippy.Base.Common where
-import Control.Applicative
 import Data.Aeson
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.HashMap.Strict as H
 import Data.Monoid
 import Data.Proxy
+import Data.Tagged
 import Data.Text (Text)
 import Data.Text.Lazy (fromStrict)
 import Data.Text.Lazy.Encoding
@@ -38,8 +38,17 @@ newtype Key a = Key { fromKey :: ByteString }
 keyProxy :: Key a -> Proxy a
 keyProxy = const Proxy
 
-rekey :: Key a -> Key b
-rekey = Key . fromKey
+class Rekey a b where
+	rekey :: a -> b
+
+instance Rekey (Key a) (Tagged b ByteString) where
+	rekey = Tagged . fromKey
+
+instance Rekey (Tagged a ByteString) (Key b) where
+	rekey = Key . untag
+
+instance Rekey (Key a) (Key b) where
+	rekey = Key . fromKey
 
 data Entity a = Entity { key :: Key a, etag :: ByteString, value :: a }
 	deriving (Read, Show, Eq)

@@ -1,14 +1,8 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses, EmptyDataDecls #-}
 module Zippy.Accounts.Data.Group where
-import Control.Monad
 import Data.Aeson
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.Either
-import Data.Proxy
-import Data.Time
 import Zippy.Accounts.Data.Relationships
 import Zippy.Accounts.Data.Types
-import Zippy.Accounts.Data.User
 import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common
 import Zippy.Base.Data
@@ -35,12 +29,12 @@ getGroup :: Key Domain.Group -> MultiDb (Entity Domain.Group)
 getGroup k = do
 	gr <- riak $ fmap Right $ get group () $ rekey k
 	rawGroup <- justOne $ C.getContent gr
-	group <- ifNothing DeserializationError $ O.fromContent rawGroup
+	dbGroup <- ifNothing DeserializationError $ O.fromContent rawGroup
 	e <- ifNothing DeserializationError $ C.getVClock gr
-	return $! Entity k e $ fromData group
+	return $! Entity k e $ fromData dbGroup
 
 getUserGroups :: Key Domain.User -> MultiDb [Entity Domain.Group]
-getUserGroups k = undefined
+getUserGroups _ = undefined
 {-
 	mu <- getUser $ rekey k
 	case mu of

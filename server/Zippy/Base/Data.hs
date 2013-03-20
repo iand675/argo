@@ -19,11 +19,8 @@ module Zippy.Base.Data (
   convertEither,
   onFailure
 ) where
-import Control.Applicative
 import Control.Monad.Reader
-import Control.Monad.Trans
 import Control.Monad.Trans.Either
-import Data.Aeson.Types
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Monoid
 import Data.Proxy
@@ -71,9 +68,9 @@ justOne [] = failure NotFound
 justOne (x:[]) = success x
 justOne _ = failure DataConflict
 
-data RiakConnection = RiakConnection
-data RedisConnection = RedisConnection
-data Pool a = Pool
+--data RiakConnection = RiakConnection
+--data RedisConnection = RedisConnection
+--data Pool a = Pool
 
 data DbConfig = DbConfig
                 { riakConnection :: Riak.Connection
@@ -85,6 +82,7 @@ data DbConfig = DbConfig
 newtype MultiDb a = MultiDb { fromMultiDb :: EitherT DataError (ReaderT DbConfig IO) a }
   deriving (Monad, Functor)
 
+initialize :: IO DbConfig
 initialize = do
   redisConn <- connect defaultConnectInfo
   riakConn <- Riak.connect (Just "10.0.2.15") Nothing
@@ -94,13 +92,14 @@ initialize = do
                     , metricTracker = const (return ())
                     }
 
+shutdown :: DbConfig -> IO (Either Reply Status)
 shutdown c = runRedis (redisConnection c) quit
 
 runData :: MonadIO m => MultiDb a -> m (Either DataError a)
 runData m = liftIO $ do
   conf <- initialize
   result <- runReaderT (runEitherT $ fromMultiDb m) conf
-  runRedis (redisConnection conf) quit
+  _ <- runRedis (redisConnection conf) quit
   Riak.disconnect (riakConnection conf)
   return result
 

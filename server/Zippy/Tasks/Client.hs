@@ -3,10 +3,10 @@ module Zippy.Tasks.Client where
 import Data.Aeson
 import Data.Monoid
 import Data.ByteString
+import Zippy.Accounts.Web.Types
 import Zippy.Base.Client
 import Zippy.Base.Common
-import Zippy.Tasks.Web.Models
-import Zippy.User.Web.Models
+import Zippy.Tasks.Web.Types
 
 basicHandlers :: FromJSON a => [Handler (Maybe a)]
 basicHandlers = [ bodyOn 200, nothingOn 401, nothingOn 404 ]

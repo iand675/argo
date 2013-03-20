@@ -15,6 +15,7 @@ data Config = Config
 	{ dbConfig :: DbConfig
 	}
 
+sendApp :: Handler c ()
 sendApp = authenticate landingPage appPage
 	where
 		landingPage = do
@@ -30,6 +31,7 @@ sendApp = authenticate landingPage appPage
 			header "Expires" "Tue, 01 Jan 1980 1:00:00 GMT"
 			header "Pragma" "no-cache"
 
+sendFile :: Handler c ()
 sendFile = do
 	f <- param "filename"
 	file $ "./content/" ++ f
@@ -76,7 +78,9 @@ routes conf = do
 	get    "/content/:filename"   $ withConf sendFile
 	notFound                      $ Web.Scotty.raise "not found"
 
+main :: IO ()
 main = do
 	dbConf <- initialize
 	scotty 3000 $ routes $ Config dbConf
-	shutdown dbConf
+	_ <- shutdown dbConf
+	return ()

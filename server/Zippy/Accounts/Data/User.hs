@@ -1,12 +1,9 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, EmptyDataDecls #-}
 module Zippy.Accounts.Data.User where
 import Crypto.PasswordStore
-import qualified Data.ByteString as B
 import Data.Aeson
-import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.Text (Text)
 import Data.Text.Encoding
-import Data.Time.Clock (UTCTime)
 import Zippy.Accounts.Data.Relationships
 import Zippy.Accounts.Data.Types
 import Zippy.Base.Common
@@ -27,8 +24,8 @@ instance O.Delete User
 
 createUser :: User -> MultiDb (Entity User)
 createUser u = riak $ do
-	let k = toKey $ userUsername u
-	gr <- get user () k
+	let k = rekey $ toKey $ userUsername u
+	gr <- get user () $ k
 	case C.getContent gr of
 		[] -> do
 			pr <- put user (O.withVClockFrom gr) k u
@@ -39,16 +36,16 @@ createUser u = riak $ do
 
 getUser :: Key User -> MultiDb (Entity User)
 getUser k = do
-	gr <- riak $ fmap Right $ get user () k
-	user <- justOne (C.getContent gr)
-	u <- ifNothing DeserializationError $ O.fromContent user
+	gr <- riak $ fmap Right $ get user () $ rekey k
+	dbUser <- justOne (C.getContent gr)
+	u <- ifNothing DeserializationError $ O.fromContent dbUser
 	e <- ifNothing DeserializationError $ C.getVClock gr
 	return $ Entity k e u
 
 -- username -> password -> bool
 signIn :: Text -> Text -> MultiDb (Maybe Text)
-signIn key password = do
-	mUser <- onFailure (const $ return Nothing) (return . Just) $ getUser $ toKey key
+signIn username password = do
+	mUser <- onFailure (const $ return Nothing) (return . Just) $ getUser $ rekey $ toKey username
 	case mUser of
 		Nothing -> return Nothing
 		Just u -> if verifyPassword (encodeUtf8 password) (userPasswordHash $ value u)

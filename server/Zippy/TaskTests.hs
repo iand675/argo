@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Web.TaskTests where
+module Zippy.TaskTests where
 import qualified Data.Text as T
 import System.Random
 import Test.Hspec
@@ -7,9 +7,9 @@ import Test.QuickCheck
 import Test.HUnit
 import Zippy.Base.Client
 import Zippy.Base.Common
-import Zippy.Tasks.Web.Models
-import Zippy.User.Web.Models
-import qualified Zippy.User.Client as C
+import Zippy.Accounts.Web.Types
+import Zippy.Tasks.Web.Types
+import qualified Zippy.Accounts.Client as C
 import qualified Zippy.Tasks.Client as C
 
 local = runClient "http://127.0.0.1:3000"
@@ -74,7 +74,7 @@ updateTask = describe "POST /tasks/:task" $ do
 		aUser <- randomUser
 		result <- local $ do
 			C.createUser aUser
-			C.updateTask nonexistantTask $ TaskChangeset (Just "whatever") Nothing Nothing
+			C.updateTask nonexistantTask $ TaskChangeset (Just "whatever") Nothing Nothing Nothing
 		assertBool (show result) $ result == Right Nothing
 	it "returns 400 when the task cannot be deserialized" $ pending ""
 	it "does not allow updates if the user does not have permission" $ pending ""

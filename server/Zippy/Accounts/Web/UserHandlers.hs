@@ -5,17 +5,13 @@ import Data.Char
 import Data.Monoid
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as L
-import Data.Time.Clock
 import Network.HTTP.Types.Status
 import qualified Zippy.Accounts.Data.Service as S
 import qualified Zippy.Accounts.Data.Group as S
-import qualified Zippy.Accounts.Data.Types as S
-import Zippy.Accounts.Domain.Types
 import Zippy.Accounts.Domain.Mappers
 import Zippy.Accounts.Session
 import Zippy.Accounts.Web.Types
 import Zippy.Base.Common
-import Zippy.Base.Data
 import Zippy.Base.Web
 
 validateUser, validateEmail, validateUserUsername, validatePassword, validateUserName :: NewUser -> Bool
@@ -32,13 +28,13 @@ listUsers = raise "listUsers: unimplemented"
 createUser :: Handler c ()
 createUser = do
 	timestamp <- now
-	user <- jsonData
-	newUser <- liftIO $ initializeUser user timestamp
-	if not $ validateUser user
+	webUser <- jsonData
+	newUser <- liftIO $ initializeUser webUser timestamp
+	if not $ validateUser webUser
 		then status badRequest400
 		else withData (S.createUser newUser) $ \r -> do
 			status created201
-			header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (newUserUsername user) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
+			header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (newUserUsername webUser) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
 			json $ toModel currentUser $ value r
 
 getUser :: Handler c ()
@@ -61,7 +57,7 @@ signIn = do
 	withData (S.signIn (signInUsername signInReq) (signInPassword signInReq)) $ \mcookie ->
 		case mcookie of
 			Nothing -> status badRequest400
-			Just c -> do
+			Just _ -> do
 				status noContent204
 				header "Set-Cookie" $ "ZippyAuth=" <> L.fromStrict (signInUsername signInReq) <> "; Path=/; Expires=Wed, 13-Jan-2021 22:23:01 GMT;"
 	--request <- jsonData

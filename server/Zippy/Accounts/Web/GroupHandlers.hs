@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Accounts.Web.GroupHandlers where
-import Data.Proxy
 import Network.HTTP.Types.Status
 import Zippy.Accounts.Domain.Mappers
 import Zippy.Accounts.Web.Types
 import Zippy.Accounts.Session
 import qualified Zippy.Accounts.Data.Group as G
+import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common
 import Zippy.Base.Web
 
+groupKey :: Handler c (Key Domain.Group)
 groupKey = fmap Key $ param "group"
 
 listGroups :: Handler c ()

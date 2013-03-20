@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Web.Tests where
+module Zippy.Tests where
 import Data.Maybe
 import qualified Data.Text as T
 import Network.HTTP.Conduit
@@ -10,8 +10,8 @@ import Test.QuickCheck
 import Test.HUnit
 import Zippy.Base.Client
 import Zippy.Base.Common
-import qualified Zippy.User.Client as C
-import Zippy.User.Web.Models
+import qualified Zippy.Accounts.Client as C
+import Zippy.Accounts.Web.Types
 
 local = runClient "http://127.0.0.1:3000"
 

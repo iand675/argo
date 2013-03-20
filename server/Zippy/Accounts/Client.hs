@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Zippy.User.Client where
+module Zippy.Accounts.Client where
 import Data.Aeson
 import Data.Monoid
 import Data.ByteString
 import Zippy.Base.Client
 import Zippy.Base.Common
-import Zippy.User.Web.Models
-import Zippy.Tasks.Web.Models
+import Zippy.Accounts.Web.Types
+--import Zippy.Tasks.Web.Types
 
 -- listUsers :: UserM [User]
 basicHandlers :: FromJSON a => [Handler (Maybe a)]

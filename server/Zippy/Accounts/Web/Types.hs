@@ -1,6 +1,5 @@
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Accounts.Web.Types where
-import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common
 import Zippy.Base.JSON
 import Data.Proxy

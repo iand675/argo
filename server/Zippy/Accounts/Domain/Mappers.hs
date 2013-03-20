@@ -1,13 +1,15 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Zippy.Accounts.Domain.Mappers where
 import Crypto.PasswordStore
+import Data.ByteString (ByteString)
+import Data.Text (Text)
 import Data.Text.Encoding
 import Data.Time
-import qualified Zippy.Accounts.Data.Types as Data
 import Zippy.Accounts.Domain.Types
 import qualified Zippy.Accounts.Web.Types as Web
 import Zippy.Base.Common
 
+hashPassword :: Text -> IO ByteString
 hashPassword t = makePassword (encodeUtf8 t) 12
 
 initializeUser :: Web.NewUser -> UTCTime -> IO User

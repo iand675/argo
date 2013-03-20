@@ -7,6 +7,7 @@ import Data.Time (UTCTime)
 import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common (rekey, Key, Namespace(..), DomainData(..), DataDomain(..))
 import Zippy.Base.JSON
+import qualified Zippy.Riak.Types as Riak
 
 data User = User
 	{ userUsername         :: Text
@@ -60,8 +61,23 @@ instance Namespace User where
 instance Namespace Group where
 	namespace = const "group"
 
+instance Riak.Namespace User where
+	namespace = const "user"
+
+instance Riak.Namespace Group where
+	namespace = const "group"
+
 instance DataDomain User Domain.User where
-	--fromData u = 
+	fromData u = Domain.User
+	    { Domain.userUsername         = userUsername u
+	    , Domain.userName             = userName u
+	    , Domain.userAvatar           = userAvatar u
+	    , Domain.userEmail            = userEmail u
+	    , Domain.userPasswordHash     = userPasswordHash u
+	    , Domain.userStripeCustomerId = userStripeCustomerId u
+	    , Domain.userCompany          = userCompany u
+	    , Domain.userCreatedAt        = userCreatedAt u
+	    }
 
 instance DomainData Domain.User User where
 	toData u = User
@@ -80,6 +96,7 @@ instance DataDomain Group Domain.Group where
 		{ Domain.groupName = groupName g
 		, Domain.groupOwner = rekey $ groupOwner g
 		, Domain.groupActive = groupActive g
+		, Domain.groupMembers = []
 		}
 
 instance DomainData Domain.Group Group where

@@ -1,11 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Tasks.Web.ListHandlers where
-import Control.Monad.Trans
 import Network.HTTP.Types.Status
-import Zippy.Accounts.Domain.Types
 import Zippy.Accounts.Session
 import Zippy.Base.Common
-import Zippy.Base.Data
 import Zippy.Base.Web
 import qualified Zippy.Tasks.Data.List as L
 import Zippy.Tasks.Domain.Mappers
@@ -22,7 +19,7 @@ createList = authenticate (status unauthorized401) $ \userId -> do
 	withData (L.createList $ initializeList timestamp userId listModel) (json . fmap (toModel list))
 
 getList :: Handler c ()
-getList = authenticate (status unauthorized401) $ \userId -> do
+getList = authenticate (status unauthorized401) $ \_ {-userId-} -> do
 	listId <- param "list"
 	withData (L.getList $ Key listId) (json . fmap (toModel list))
 

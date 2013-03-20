@@ -1,11 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Tasks.Data.Task where
-import Control.Monad
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.Maybe
-import Data.Proxy
-import Data.Time
-import Zippy.Accounts.Data.Relationships (User, creatorIx, assignedToIx)
 import Zippy.Base.Common
 import Zippy.Base.Data
 import Zippy.Base.JSON
@@ -30,14 +24,14 @@ createTask t = do
 
 getTask :: Key Domain.Task -> MultiDb (Entity Domain.Task)
 getTask k = do
-    c <- riak $ fmap Right $ get task () $ rekey k
+    c <- riak $ fmap Right $ get task () $ rekey (rekey k :: Key Task)
     aContent <- justOne $ C.getContent c
     rawTask <- ifNothing DeserializationError $ O.fromContent aContent
     e <- ifNothing DeserializationError $ C.getVClock c
     return $! Entity k e $ fromData rawTask
 
 getListTasks :: Key Domain.List -> MultiDb [Entity Domain.Task]
-getListTasks k = undefined 
+getListTasks _ = undefined 
 {- riak $ do
     -- TODO: once linkwalking / mapreduce is better understood,
     -- consider replacing indexing with something like this:

@@ -1,15 +1,8 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, MultiParamTypeClasses #-}
 module Zippy.Tasks.Data.List where
-import Control.Monad
 import Data.Aeson
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.Either
-import Data.Maybe
-import Data.Proxy
-import Data.Text (Text)
-import Data.Time.Clock
 import qualified Zippy.Accounts.Domain.Types as Domain
-import Zippy.Accounts.Data.Relationships (User, Group, user, ownerIx, creatorIx)
+import Zippy.Accounts.Data.Relationships (ownerIx, creatorIx)
 import Zippy.Base.Common
 import Zippy.Base.Data
 import qualified Zippy.Riak.Content as C
@@ -18,7 +11,6 @@ import Zippy.Riak.Simple
 import Zippy.Tasks.Data.Relationships
 import Zippy.Tasks.Data.Types
 import qualified Zippy.Tasks.Domain.Types as Domain
-import Zippy.Tasks.Domain.Mappers
 
 instance O.AsContent List where
     fromContent = decode . C.value
@@ -37,9 +29,9 @@ getList :: Key Domain.List -> MultiDb (Entity Domain.List)
 getList k = do
     r <- riak $ fmap Right $ get list () $ rekey k
     rawList <- justOne $ C.getContent r
-    list <- ifNothing DeserializationError $ O.fromContent rawList
+    dbList <- ifNothing DeserializationError $ O.fromContent rawList
     e <- ifNothing DeserializationError $ C.getVClock r
-    return $! Entity k e $ fromData list
+    return $! Entity k e $ fromData dbList
     --return $! fmap result $ (ifNothing DeserializationError . O.fromContent <=< justOne . C.getContent) gr
     --where result = Entity k . fromData
 
@@ -67,4 +59,4 @@ getUserLists k = do
 --updateList = undefined
 
 archiveList :: Key List -> MultiDb ()
-archiveList k = undefined
+archiveList _ = undefined

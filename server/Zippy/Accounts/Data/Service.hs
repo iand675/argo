@@ -1,14 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Accounts.Data.Service where
-import Data.Aeson
-import qualified Data.ByteString as S
-import Data.ByteString.Lazy (ByteString, toStrict, fromStrict)
-import Data.Monoid
-import Data.Proxy
-import Data.Text (Text, pack)
-import Data.Text.Encoding
-import Database.Redis hiding (decode)
-import Zippy.Accounts.Data.Types
+import Data.ByteString.Lazy (ByteString)
+import Data.Text (Text)
 import qualified Zippy.Accounts.Data.User as Raw
 import qualified Zippy.Accounts.Domain.Types as Domain
 import Zippy.Base.Common

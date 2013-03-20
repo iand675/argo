@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Zippy.Base.Web where
 import Control.Monad.Reader
-import Control.Monad.Trans
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
 import Data.Aeson (ToJSON, FromJSON)
+import Data.String
 import Data.Text (Text)
 import Data.Text.Encoding
 import Data.Time
@@ -14,8 +14,9 @@ import Network.HTTP.Types.Status
 import Network.Wai
 import Web.Cookie
 import qualified Web.Scotty as S
-import Zippy.Base.Data (DataError(..), runData, MultiDb(..))
+import Zippy.Base.Data (DataError(..), runData, MultiDb)
 
+hSetCookie :: IsString a => a
 hSetCookie = "Set-Cookie"
 
 cookies :: Handler c [(Text, Text)]
